@@ -1,5 +1,7 @@
-# Local machine config for scripts/*.sh (ports, camera indices)
+# Local machine config (ports, camera indices): robot.env for scripts/*.sh,
+# hackathon.local.toml for the `so` helper
 robot.env
+hackathon.local.toml
 
 # Training outputs, checkpoints, camera test frames
 outputs/

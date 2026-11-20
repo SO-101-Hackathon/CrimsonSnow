@@ -78,7 +78,7 @@ There are two equivalent ways to run the same official `lerobot-*` commands. Pic
 | Runs on | macOS, Linux, WSL | macOS, Linux, WSL, native Windows |
 | Machine settings | `robot.env` (copied from `robot.env.example`, not committed) | `hackathon.toml` + ports found by USB serial number |
 | Find the ports | `lerobot-find-port`, then edit `robot.env` | `so ports assign` |
-| Find the cameras | `lerobot-find-cameras opencv`, then edit `robot.env` | `so cameras`, then edit `hackathon.toml` |
+| Find the cameras | `lerobot-find-cameras opencv`, then edit `robot.env` | `so cameras`, then edit `hackathon.local.toml` |
 
 Both use the same arm ids (`crimson_follower`, `crimson_leader`), camera names (`top`, `wrist`),
 resolution and task text, so calibration files, datasets and policies made with one work with the other.

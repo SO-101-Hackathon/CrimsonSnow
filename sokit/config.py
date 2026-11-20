@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "hackathon.toml"
+LOCAL_CONFIG_PATH = ROOT / "hackathon.local.toml"  # per-computer overrides, git-ignored
 STATE_PATH = ROOT / ".so101-state.json"
 JOURNAL_DIR = ROOT / "journal"
 OUTPUTS_DIR = ROOT / "outputs"
@@ -19,11 +20,46 @@ OUTPUTS_DIR = ROOT / "outputs"
 STAMP_RE = re.compile(r"_(\d{8})_(\d{6})$")
 
 
+def local_overrides() -> dict:
+    """This computer's own settings (hackathon.local.toml, not committed), or {}."""
+    if not LOCAL_CONFIG_PATH.exists():
+        return {}
+    with open(LOCAL_CONFIG_PATH, "rb") as f:
+        return tomllib.load(f)
+
+
+def _check_local(local: dict, base: dict) -> None:
+    """Only what differs between computers may be overridden. Everything a dataset, a calibration
+    file or a trained policy depends on has to stay the same for the whole team."""
+    name = LOCAL_CONFIG_PATH.name
+    for section, key in (("robot", "id"), ("robot", "type"), ("teleop", "id"), ("teleop", "type"),
+                         ("task", "description"), ("task", "slug")):
+        if key in local.get(section, {}):
+            raise SystemExit(f"{name}: [{section}].{key} is shared by the whole team: change it in hackathon.toml")
+    for cam, fields in local.get("cameras", {}).items():
+        if cam not in base.get("cameras", {}):
+            raise SystemExit(f"{name}: camera '{cam}' is not defined in hackathon.toml (camera names are shared)")
+        extra = set(fields) - {"index_or_path", "fourcc"}
+        if extra:
+            raise SystemExit(f"{name}: [cameras.{cam}] may only set index_or_path or fourcc, not {sorted(extra)}")
+
+
+def _merge(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for key, value in over.items():
+        out[key] = _merge(base[key], value) if isinstance(value, dict) and isinstance(base.get(key), dict) else value
+    return out
+
+
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
         raise SystemExit(f"Missing {CONFIG_PATH}")
     with open(CONFIG_PATH, "rb") as f:
         cfg = tomllib.load(f)
+    local = local_overrides()
+    if local:
+        _check_local(local, cfg)
+        cfg = _merge(cfg, local)
     for section in ("robot", "teleop", "task", "cameras"):
         if section not in cfg:
             raise SystemExit(f"hackathon.toml: missing [{section}] section")

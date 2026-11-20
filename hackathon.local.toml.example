@@ -1,0 +1,18 @@
+# Settings of THIS computer only. Copy to hackathon.local.toml (which is not committed) and edit.
+# Values here replace the ones in hackathon.toml. Only what differs between computers is allowed:
+# camera numbers, arm ports and training/recording preferences. Arm ids, camera names and the task
+# text are shared by the whole team and cannot be changed here.
+
+# Camera numbers: run `so cameras` and look at outputs/captured_images/opencv_<n>.png.
+# On a laptop, 0 is usually the built-in webcam: never record with it.
+[cameras.top]
+index_or_path = 1
+
+[cameras.wrist]
+index_or_path = 2
+
+# Arm ports: leave them out to keep "auto" (found by USB serial number after `so ports assign`).
+# [robot]
+# port = "COM5"            # Linux: /dev/ttyACM0   macOS: /dev/tty.usbmodem...
+# [teleop]
+# port = "COM6"

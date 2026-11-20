@@ -110,9 +110,16 @@ Everything else must be identical on every computer and in both configurations: 
 - **Ports.** With `so`: leave `port = "auto"` in `hackathon.toml` and run `so ports assign` once. The
   helper remembers each board by its USB serial number, so port names can change without swapping
   leader and follower. With the scripts: run `lerobot-find-port` and put the ports in `robot.env`.
-- **Cameras.** Run `so cameras` (or `lerobot-find-cameras opencv`) on each computer and set the indices.
+- **Cameras.** Run `so cameras` (or `lerobot-find-cameras opencv`) on each computer and look at
+  `outputs/captured_images/opencv_<n>.png` to see which number is which camera. With `so`, put this
+  computer's numbers in `hackathon.local.toml` (copy `hackathon.local.toml.example`); that file is not
+  committed, so each laptop keeps its own. With the scripts, put them in `robot.env`.
+  **Check the pictures before recording:** on a laptop one of the numbers is the built-in webcam, and
+  recording with it would put people's faces into a public dataset.
   Camera **names** (`top`, `wrist`) must never change: they are stored in the dataset and a trained
   policy expects them.
+- **`hackathon.local.toml`.** Holds one computer's camera numbers and, if wanted, fixed arm ports. It
+  cannot change arm ids, camera names, resolution or the task text; `so` refuses to start if it tries.
 - **Calibration.** `so calibrate` copies the result into `calibration/`. On another computer with the
   same arms, `so calib restore` reuses it.
 - **Device.** `so train` passes no device, so LeRobot uses the best one present: `cuda`, then `mps`,

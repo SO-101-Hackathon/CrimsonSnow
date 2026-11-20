@@ -41,9 +41,18 @@ Commands run through `so` are logged separately and automatically in `journal/co
 **If you already copied `robot.env` before this change:** set `TASK="Put the battery in the bin"` in it
 by hand, because `robot.env` is not tracked. Every recording of one dataset must carry the same task text.
 
+## 20 Nov 2026, evening — arms and cameras at the venue
+
+| Step | What was done | How to repeat it |
+|---|---|---|
+| Calibration | Both arms were calibrated on the teammate's Mac and committed to `calibration/` | `so calibrate follower`, `so calibrate leader` |
+| Calibration on the Windows laptop | Copied from the repository into LeRobot's folder; nothing was recalibrated | `git pull`, then `so calib restore` |
+| Which arm is which | Follower = USB serial `5B91029724`, leader = USB serial `5B91031270`. Read from `journal/commands.md`: on the Mac the follower was calibrated on `/dev/cu.usbmodem5B910297241` and the leader on `…5B910312701`, and macOS puts the serial number in the port name. On the Windows laptop these are COM5 and COM6 | `so ports assign` does the same by unplugging each arm once |
+| Cameras on the Windows laptop | `so cameras`, then looked at the three pictures: 0 = the laptop's own webcam, 1 = overhead camera, 2 = wrist camera. The shared file said wrist = 0, which is right on the Mac and wrong here | `so cameras`, then set the numbers in `hackathon.local.toml` |
+| Per-computer settings | New `hackathon.local.toml` (not committed) holds each computer's camera numbers, so `hackathon.toml` no longer has to change per laptop | copy `hackathon.local.toml.example` |
+| Check | `so doctor` on the Windows laptop: 0 problems, 0 warnings, both arms and both cameras found | `so doctor` |
+
 ## Still to do at the venue
 
-- `so ports assign`: identify leader and follower by USB serial number.
-- `so calibrate follower`, `so calibrate leader`: results are copied into `calibration/`.
-- `so cameras`: set the two camera indices in `hackathon.toml`.
+- `so teleop` on the Windows laptop: confirm the follower mirrors the leader with the copied calibration.
 - `so camcheck`: save the reference camera frames into `calibration/camera_refs/`.

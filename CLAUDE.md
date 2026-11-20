@@ -104,5 +104,8 @@ Editable install (`pip install -e . --no-deps`) provides `so.exe`; edits to `sok
 - A teammate works on Apple Silicon (macOS 15): there, run through `conda run -n lerobot …` or
   `~/miniforge3/envs/lerobot/bin/…` when the env isn't activated, and training uses `mps`.
 - Camera names in `hackathon.toml` become dataset keys; changing them invalidates trained policies.
+- Camera numbers and ports differ per computer: they go in `hackathon.local.toml` (git-ignored, template
+  `hackathon.local.toml.example`), never in `hackathon.toml`. On the Windows laptop 0 is the built-in
+  webcam, 1 the overhead camera, 2 the wrist camera; always look at `so cameras` pictures before recording.
 - Don't commit `outputs/`, `robot.env` or tokens; `hf auth login` stores the token outside the repo.
 - Keep `journal/` — it is the team's evidence for the jury (commands, QA reports, eval log).

@@ -13,12 +13,12 @@ user = ""
 #  and never give the leader the follower's id (the arm would move wrong
 #  without any error message).
 # ----------------------------------------------------------------------------
-[robot]                      # FOLLOWER: white arm with the gripper
+[robot]                      # FOLLOWER: the arm with the gripper (orange on our station)
 type = "so101_follower"
 id = "crimson_follower"      # same id as FOLLOWER_ID in robot.env.example
 port = "auto"                # "auto" = found by USB serial (run `so ports assign` once) | or "COM5"
 
-[teleop]                     # LEADER: black arm with the handle
+[teleop]                     # LEADER: the arm with the handle
 type = "so101_leader"
 id = "crimson_leader"        # same id as LEADER_ID in robot.env.example
 port = "auto"
@@ -26,8 +26,11 @@ port = "auto"
 # ----------------------------------------------------------------------------
 #  Cameras.  The names become dataset keys (observation.images.<name>).
 #  A trained policy needs the SAME names, resolution and physical placement at
-#  rollout time.  Find indices with `so cameras`.  On this laptop index 0 is
-#  normally the built-in webcam, so the USB cameras are usually 1 and 2.
+#  rollout time.
+#  The camera NUMBERS below differ per computer: find yours with `so cameras`
+#  and put them in hackathon.local.toml (see hackathon.local.toml.example),
+#  which is not committed. Do not edit the numbers here for your own laptop.
+#  On a laptop 0 is usually the built-in webcam: never record with it.
 # ----------------------------------------------------------------------------
 [cameras.top]
 index_or_path = 1

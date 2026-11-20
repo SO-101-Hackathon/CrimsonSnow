@@ -90,6 +90,38 @@ class Config(unittest.TestCase):
                 os.environ["HF_LEROBOT_HOME"] = old
 
 
+class LocalOverrides(unittest.TestCase):
+    """hackathon.local.toml holds one computer's camera numbers and ports, and nothing shared."""
+
+    def with_local(self, text: str) -> dict:
+        tmp = Path(tempfile.mkdtemp()) / "hackathon.local.toml"
+        tmp.write_text(text, encoding="utf-8")
+        old = config.LOCAL_CONFIG_PATH
+        config.LOCAL_CONFIG_PATH = tmp
+        try:
+            return config.load_config()
+        finally:
+            config.LOCAL_CONFIG_PATH = old
+            shutil.rmtree(tmp.parent, ignore_errors=True)
+
+    def test_camera_number_and_port_are_replaced(self):
+        cfg = self.with_local('[cameras.wrist]\nindex_or_path = 7\n[robot]\nport = "COM9"\n')
+        self.assertEqual(cfg["cameras"]["wrist"]["index_or_path"], 7)
+        self.assertEqual(cfg["cameras"]["wrist"]["width"], 640)  # the rest of the camera is kept
+        self.assertEqual(cfg["robot"]["port"], "COM9")
+        self.assertEqual(sorted(cfg["cameras"]), ["top", "wrist"])
+
+    def test_shared_values_cannot_be_overridden(self):
+        for text in ('[robot]\nid = "other"\n', '[task]\ndescription = "something else"\n',
+                     "[cameras.side]\nindex_or_path = 3\n", "[cameras.top]\nwidth = 1280\n"):
+            with self.assertRaises(SystemExit, msg=text):
+                self.with_local(text)
+
+    def test_example_file_is_valid(self):
+        cfg = self.with_local((ROOT / "hackathon.local.toml.example").read_text(encoding="utf-8"))
+        self.assertEqual(sorted(cfg["cameras"]), ["top", "wrist"])
+
+
 class DatasetLookup(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())

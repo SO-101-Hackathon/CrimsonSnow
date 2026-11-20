@@ -160,8 +160,9 @@ def cmd_cameras(args, cfg, state):
     shots = Path("outputs") / "captured_images" / "opencv_<index>.png"
     print(
         f"\nOpen {shots} to see which index is which camera,\n"
-        "then set [cameras.<name>].index_or_path in hackathon.toml.  Verify with:  so camcheck\n"
-        "(Linux: a camera can also be named by its path, e.g. /dev/video2. Indices differ per computer.)"
+        "then set [cameras.<name>].index_or_path for THIS computer in hackathon.local.toml\n"
+        "(copy hackathon.local.toml.example; camera numbers differ per computer, so they are not shared).\n"
+        "Verify with:  so camcheck      Linux: a camera can also be named by its path, e.g. /dev/video2."
     )
     return code
 

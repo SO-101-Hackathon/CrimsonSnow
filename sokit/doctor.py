@@ -201,6 +201,9 @@ def _check_cameras(cfg) -> None:
         _line("warn", "Camera scan", str(exc)[:160])
     ids = sorted(c.get("id") for c in found)
     _line("info", "Cameras detected", f"indices {ids}" if ids else "none")
+    mine = sorted(C.local_overrides().get("cameras", {}))
+    if mine:
+        _line("info", "Camera numbers", f"{', '.join(mine)} set for this computer in {C.LOCAL_CONFIG_PATH.name}")
     for name, c in cfg["cameras"].items():
         kwargs = {k: c[k] for k in ("fps", "width", "height", "fourcc") if k in c}
         idx = c.get("index_or_path")
@@ -213,7 +216,7 @@ def _check_cameras(cfg) -> None:
         except Exception as exc:  # noqa: BLE001
             _line("warn" if idx not in ids else "fail", f"camera '{name}'",
                   f"index {idx}: {type(exc).__name__}: {str(exc)[:140]}",
-                  "so cameras  (find the right index), then edit [cameras] in hackathon.toml")
+                  "so cameras  (find the right index), then set it in hackathon.local.toml")
 
 
 def run(cfg, state) -> int:
