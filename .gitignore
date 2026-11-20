@@ -1,0 +1,21 @@
+# Local machine config (ports, camera indices)
+robot.env
+
+# Training outputs / checkpoints
+outputs/
+wandb/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# macOS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
+*.token
+.claude/settings.local.json
