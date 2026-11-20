@@ -36,6 +36,8 @@ Commands run through `so` are logged separately and automatically in `journal/co
 | Two toolchains merged | The Mac scaffold and the Windows `so` helper now live side by side. `setup.sh` is one script for Ubuntu, macOS and WSL and also installs `so` | [SETUP.md](SETUP.md) |
 | Shared settings aligned | `hackathon.toml` now uses the arm ids `crimson_follower` / `crimson_leader` (it had `h_follower` / `h_leader`; nothing was calibrated under those). `robot.env.example` now has the task text `Put the battery in the bin` (it had the red-cube example) | a test in `tests/` keeps the two files in agreement |
 
+| First clean-machine check | CI ran `./setup.sh` on fresh Ubuntu and macOS machines and the manual steps on Windows: LeRobot 0.7.0 installed and every test passed on all three. The first attempt on Ubuntu ran out of disk, hence the 15 GB note in SETUP.md | [CI runs](https://github.com/SO-101-Hackathon/CrimsonSnow/actions) |
+
 **If you already copied `robot.env` before this change:** set `TASK="Put the battery in the bin"` in it
 by hand, because `robot.env` is not tracked. Every recording of one dataset must carry the same task text.
 
