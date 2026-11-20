@@ -28,6 +28,17 @@ Commands run through `so` are logged separately and automatically in `journal/co
 | Other operating systems | `setup.sh` for Ubuntu, macOS and WSL; device chosen by LeRobot; sleep prevention and hints per system; tests and CI | [SETUP.md](SETUP.md) |
 | Exact versions | Saved every package version of the laptop's environment | [requirements/lock-windows-cu132.txt](../requirements/lock-windows-cu132.txt) |
 
+## 20 Nov 2026 — teammate's laptop (Apple Silicon, macOS 15) and the merge
+
+| Step | What was done | How to repeat it |
+|---|---|---|
+| macOS scaffold | `setup.sh`, `robot.env.example` and the bash wrappers in `scripts/` were added for the Mac | `./setup.sh`, then edit `robot.env` |
+| Two toolchains merged | The Mac scaffold and the Windows `so` helper now live side by side. `setup.sh` is one script for Ubuntu, macOS and WSL and also installs `so` | [SETUP.md](SETUP.md) |
+| Shared settings aligned | `hackathon.toml` now uses the arm ids `crimson_follower` / `crimson_leader` (it had `h_follower` / `h_leader`; nothing was calibrated under those). `robot.env.example` now has the task text `Put the battery in the bin` (it had the red-cube example) | a test in `tests/` keeps the two files in agreement |
+
+**If you already copied `robot.env` before this change:** set `TASK="Put the battery in the bin"` in it
+by hand, because `robot.env` is not tracked. Every recording of one dataset must carry the same task text.
+
 ## Still to do at the venue
 
 - `so ports assign`: identify leader and follower by USB serial number.

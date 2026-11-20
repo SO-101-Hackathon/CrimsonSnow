@@ -1,6 +1,6 @@
-# Project notes for AI assistants
+# CrimsonSnow: SO-101 / LeRobot hackathon project
 
-Workspace for the **Hackathon LeRobot Bilbao** (20–22 Nov 2026): imitation learning on an SO-101
+Notes for AI assistants. Workspace of team CrimsonSnow for the **Hackathon LeRobot Bilbao** (20–22 Nov 2026): imitation learning on an SO-101
 leader/follower arm pair with LeRobot **v0.7.0**. The team laptop runs it **natively on Windows 11**
 (no WSL); the repository is public and must stay reproducible on Ubuntu, macOS and WSL too.
 Human-facing docs: `README.md` (what we did and how to repeat it), `docs/SETUP.md` (setup per operating
@@ -89,7 +89,20 @@ Editable install (`pip install -e . --no-deps`) provides `so.exe`; edits to `sok
 
 ## Conventions
 
-- Arm ids (`h_follower`, `h_leader`) name the calibration files: never change them once calibrated.
+- Arm ids (`crimson_follower`, `crimson_leader`) name the calibration files
+  (`~/.cache/huggingface/lerobot/calibration/`): never rename or swap them once calibrated.
+- Two ways to run the same LeRobot commands, which must agree on arm ids, camera names, resolution and
+  task text (`tests/` checks it): `scripts/*.sh` configured by `robot.env` (bash; macOS and Linux), and
+  the `so` helper configured by `hackathon.toml` (every system, including native Windows).
+- Reference guide: https://hackathonbilbao.eus/guia-so-101 (Spanish). Prefer its commands and flags over
+  older LeRobot docs: in 0.7.0, CLIs are `lerobot-*` and deployment uses `lerobot-rollout`, not
+  `lerobot-record --policy`.
+- `scripts/*.sh` save datasets as `${HF_USER}/crimson_dataset_YYYYMMDD_HHMMSS`; `so record` saves them as
+  `<user>/battery_YYYYMMDD_HHMMSS`. Rollout datasets must be prefixed `rollout_`.
+- Commands that move the arms (teleop, record, replay, rollout, calibrate) need a human at the robot.
+  Don't run them unattended.
+- A teammate works on Apple Silicon (macOS 15): there, run through `conda run -n lerobot …` or
+  `~/miniforge3/envs/lerobot/bin/…` when the env isn't activated, and training uses `mps`.
 - Camera names in `hackathon.toml` become dataset keys; changing them invalidates trained policies.
-- Don't commit tokens; `hf auth login` stores the token outside the repo.
+- Don't commit `outputs/`, `robot.env` or tokens; `hf auth login` stores the token outside the repo.
 - Keep `journal/` — it is the team's evidence for the jury (commands, QA reports, eval log).

@@ -154,6 +154,42 @@ class RecordingList(unittest.TestCase):
             self.assertEqual(sorted(arrangement), ["battery", "cap", "cardboard", "cork", "empty"])
 
 
+class TwoConfigurationsAgree(unittest.TestCase):
+    """scripts/*.sh read robot.env, `so` reads hackathon.toml. What a dataset, a calibration file
+    or a trained policy depends on must be the same in both, or work done with one breaks the other."""
+
+    @staticmethod
+    def env_values() -> dict:
+        out = {}
+        for line in (ROOT / "robot.env.example").read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                out[key.strip()] = value.strip().strip('"')
+        return out
+
+    def test_shared_values_match(self):
+        env, cfg = self.env_values(), config.load_config()
+        self.assertEqual(env["FOLLOWER_ID"], cfg["robot"]["id"])
+        self.assertEqual(env["LEADER_ID"], cfg["teleop"]["id"])
+        self.assertEqual(env["TASK"], cfg["task"]["description"])
+        self.assertEqual(sorted(cfg["cameras"]), ["top", "wrist"])  # the names scripts/_common.sh uses
+        for cam in cfg["cameras"].values():
+            self.assertEqual((int(env["CAM_W"]), int(env["CAM_H"]), int(env["CAM_FPS"])),
+                             (cam["width"], cam["height"], cam["fps"]))
+
+
+@unittest.skipUnless(shutil.which("bash"), "bash is not available")
+class ShellScripts(unittest.TestCase):
+    def test_scripts_parse(self):
+        scripts = [ROOT / "setup.sh", ROOT / "so", *sorted((ROOT / "scripts").glob("*.sh"))]
+        self.assertGreaterEqual(len(scripts), 3)
+        for script in scripts:
+            self.assertNotIn(b"\r\n", script.read_bytes(), f"{script.name} has Windows line endings")
+            res = subprocess.run(["bash", "-n", script.name], cwd=script.parent, capture_output=True, text=True)
+            self.assertEqual(res.returncode, 0, f"{script.name}: {res.stderr}")
+
+
 @unittest.skipUnless(shutil.which("lerobot-train"), "LeRobot is not installed in this environment")
 class DryRun(unittest.TestCase):
     """With LeRobot installed: `so` builds the same command on every operating system."""

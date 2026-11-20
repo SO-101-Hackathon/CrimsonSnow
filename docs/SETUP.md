@@ -9,7 +9,7 @@ native Windows. The steps follow the organisers' guide and LeRobot's install gui
 |---|---|---|
 | Windows 11, native (RTX 4060 Laptop) | Run by hand on the team laptop | Software path measured without a robot on 19 Nov 2026; see [RUNBOOK.md](../RUNBOOK.md) |
 | Ubuntu | Checked automatically on every push ([CI](../.github/workflows/ci.yml)) | Not run by us |
-| macOS (Apple Silicon) | Checked automatically on every push | Not run by us |
+| macOS (Apple Silicon) | Checked automatically on every push; a teammate's laptop runs it | See [SETUP_LOG.md](SETUP_LOG.md) |
 | WSL (Ubuntu) | Same script as Ubuntu; not run by us inside WSL | Not run by us. Cameras need a custom kernel (below) |
 
 "Checked automatically" means a clean machine runs `./setup.sh`, the tests in `tests/` and `so show`.
@@ -18,23 +18,20 @@ No robot is attached there, so it proves the install and the commands, not the r
 ## Ubuntu, macOS and WSL
 
 ```bash
-# 1. Miniforge (skip if `conda` already works). Close and reopen the terminal afterwards.
-curl -LO "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-bash Miniforge3-$(uname)-$(uname -m).sh
-
-# 2. This repository
 git clone https://github.com/SO-101-Hackathon/CrimsonSnow.git
 cd CrimsonSnow
-
-# 3. Everything else
-./setup.sh              # add --smolvla for the SmolVLA policy
-conda activate lerobot
+./setup.sh              # add --smolvla for the SmolVLA policy; --check only reports
+conda activate lerobot  # open a new terminal first if Miniforge was just installed
 so doctor
 ```
 
-`setup.sh` creates the conda environment `lerobot` (Python 3.12 and ffmpeg from conda-forge), installs
-`lerobot[core_scripts,training,feetech]==0.7.0` and this repository's `so` helper, then runs `so doctor`.
-It never uses `sudo`; it prints the commands that need administrator rights.
+`setup.sh` does the following, and never uses `sudo`:
+
+1. Installs Miniforge into `~/miniforge3` if `conda` is missing.
+2. Creates the conda environment `lerobot` with Python 3.12 and ffmpeg from conda-forge.
+3. Installs `lerobot[core_scripts,training,feetech]==0.7.0` and this repository's `so` helper.
+4. Copies `robot.env.example` to `robot.env`, the machine settings for `scripts/*.sh`.
+5. Runs `so doctor` and prints the commands that need administrator rights.
 
 ### Ubuntu
 
@@ -46,8 +43,10 @@ It never uses `sudo`; it prints the commands that need administrator rights.
 
 ### macOS
 
-- **Serial ports.** The arms appear as `/dev/cu.usbmodem*`. No driver is needed.
-- **Cameras.** Allow camera access for your terminal app when macOS asks.
+- **Serial ports.** The arms appear as `/dev/tty.usbmodem*` (also listed as `/dev/cu.usbmodem*`).
+  No driver is needed.
+- **Permissions.** In System Settings → Privacy & Security, give your terminal or VS Code Camera
+  access and **Input Monitoring**. Without Input Monitoring the recording keys do not work.
 - **Training.** It runs on the Apple GPU, slowly. `so train` lets LeRobot pick the device, which is
   `mps` on macOS 15 and the CPU on macOS 14. Train on an NVIDIA computer, in Colab, or with
   `so train --cloud a10g-small`.
@@ -93,21 +92,29 @@ so doctor
 
 ## What differs between systems
 
-`hackathon.toml` is the only file you edit. Two kinds of values in it depend on the computer:
+There are two ways to run the same `lerobot-*` commands: the bash scripts in `scripts/`, configured by
+`robot.env`, and the `so` helper, configured by `hackathon.toml`. The scripts need bash, so native
+Windows uses `so`. Two kinds of values depend on the computer, whichever you use:
 
 | Setting | Windows | Ubuntu and WSL | macOS |
 |---|---|---|---|
-| Arm ports (`port = "auto"`) | `COM5` | `/dev/ttyACM0` | `/dev/cu.usbmodem…` |
-| Camera (`index_or_path`) | index; `0` is usually the built-in webcam | index or `/dev/video2` | index |
+| Arm ports | `COM5` | `/dev/ttyACM0` | `/dev/tty.usbmodem…` |
+| Camera index | `0` is usually the built-in webcam | index or `/dev/video2` | index |
 
-- **Ports.** Leave `port = "auto"` and run `so ports assign` once. The helper remembers each board by
-  its USB serial number, so port names can change without swapping leader and follower.
-- **Cameras.** Run `so cameras` on each computer and set the indices. Camera **names** (`top`, `wrist`)
-  must never change: they are stored in the dataset and a trained policy expects them.
+Everything else must be identical on every computer and in both configurations: the arm ids
+(`crimson_follower`, `crimson_leader`), the camera names, the resolution and the task text. A test in
+`tests/` fails if `robot.env.example` and `hackathon.toml` disagree on any of them.
+
+- **Ports.** With `so`: leave `port = "auto"` in `hackathon.toml` and run `so ports assign` once. The
+  helper remembers each board by its USB serial number, so port names can change without swapping
+  leader and follower. With the scripts: run `lerobot-find-port` and put the ports in `robot.env`.
+- **Cameras.** Run `so cameras` (or `lerobot-find-cameras opencv`) on each computer and set the indices.
+  Camera **names** (`top`, `wrist`) must never change: they are stored in the dataset and a trained
+  policy expects them.
 - **Calibration.** `so calibrate` copies the result into `calibration/`. On another computer with the
   same arms, `so calib restore` reuses it.
 - **Device.** `so train` passes no device, so LeRobot uses the best one present: `cuda`, then `mps`,
-  then `cpu`. Force one with `so train --device mps`.
+  then `cpu`. Force one with `so train --device mps`. `scripts/train.sh` uses `DEVICE` from `robot.env`.
 - **Staying awake.** During recording and training `so` blocks idle sleep with the system's own tool:
   `SetThreadExecutionState` on Windows, `caffeinate` on macOS, `systemd-inhibit` on Linux.
 

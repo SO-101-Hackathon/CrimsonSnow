@@ -15,12 +15,12 @@ user = ""
 # ----------------------------------------------------------------------------
 [robot]                      # FOLLOWER: white arm with the gripper
 type = "so101_follower"
-id = "h_follower"
+id = "crimson_follower"      # same id as FOLLOWER_ID in robot.env.example
 port = "auto"                # "auto" = found by USB serial (run `so ports assign` once) | or "COM5"
 
 [teleop]                     # LEADER: black arm with the handle
 type = "so101_leader"
-id = "h_leader"
+id = "crimson_leader"        # same id as LEADER_ID in robot.env.example
 port = "auto"
 
 # ----------------------------------------------------------------------------

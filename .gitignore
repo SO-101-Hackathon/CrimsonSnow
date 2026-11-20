@@ -1,8 +1,11 @@
+# Local machine config for scripts/*.sh (ports, camera indices)
+robot.env
+
 # Training outputs, checkpoints, camera test frames
 outputs/
 wandb/
 
-# Machine-specific state discovered by the toolkit (USB serials, last dataset, benchmarks)
+# Machine-specific state discovered by the `so` helper (USB serials, last dataset, benchmarks)
 .so101-state.json
 
 # Local-only material: offline docs copies, vendor drivers/installers, raw video clips
@@ -21,11 +24,13 @@ __pycache__/
 # Secrets - never commit tokens
 .env
 *.token
+.claude/settings.local.json
 
 # OS / editor noise
 Thumbs.db
 .DS_Store
 .vscode/
+.idea/
 
 # Editable-install metadata
 *.egg-info/
