@@ -179,13 +179,18 @@ class TwoConfigurationsAgree(unittest.TestCase):
                              (cam["width"], cam["height"], cam["fps"]))
 
 
-@unittest.skipUnless(shutil.which("bash"), "bash is not available")
 class ShellScripts(unittest.TestCase):
-    def test_scripts_parse(self):
-        scripts = [ROOT / "setup.sh", ROOT / "so", *sorted((ROOT / "scripts").glob("*.sh"))]
-        self.assertGreaterEqual(len(scripts), 3)
-        for script in scripts:
+    SCRIPTS = [ROOT / "setup.sh", ROOT / "so", *sorted((ROOT / "scripts").glob("*.sh"))]
+
+    def test_scripts_keep_unix_line_endings(self):
+        self.assertGreaterEqual(len(self.SCRIPTS), 3)
+        for script in self.SCRIPTS:
             self.assertNotIn(b"\r\n", script.read_bytes(), f"{script.name} has Windows line endings")
+
+    # On Windows `bash` may be the WSL launcher, which fails when no distribution is installed.
+    @unittest.skipUnless(os.name != "nt" and shutil.which("bash"), "needs a real bash (Linux, macOS, WSL)")
+    def test_scripts_parse(self):
+        for script in self.SCRIPTS:
             res = subprocess.run(["bash", "-n", script.name], cwd=script.parent, capture_output=True, text=True)
             self.assertEqual(res.returncode, 0, f"{script.name}: {res.stderr}")
 

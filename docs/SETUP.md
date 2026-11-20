@@ -40,6 +40,8 @@ so doctor
 - **A board never appears.** On Ubuntu the `brltty` package can grab the serial chip:
   `sudo apt remove brltty`.
 - **NVIDIA driver.** `nvidia-smi` must work. LeRobot's guide asks for driver 580.65 or newer.
+- **Disk space.** The Linux build of torch downloads several GB of NVIDIA libraries. Our first CI run
+  on a small Ubuntu machine ran out of disk during `pip install`, so keep 15 GB or more free.
 
 ### macOS
 
