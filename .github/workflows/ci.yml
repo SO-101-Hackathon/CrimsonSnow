@@ -1,0 +1,92 @@
+name: reproducibility
+
+# Proves on clean machines that the documented setup works: Ubuntu and macOS run ./setup.sh exactly
+# as docs/SETUP.md describes, Windows runs the manual steps. No robot is attached, so this covers
+# installing, the `so` helper and the commands it builds, not recording or training results.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  helper:
+    name: so helper (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the helper without LeRobot
+        run: python -m pip install pyserial psutil && python -m pip install -e . --no-deps
+      - name: Tests that need no LeRobot
+        run: python -m unittest discover -s tests -v
+
+  setup-script:
+    name: ./setup.sh (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          auto-activate-base: true
+      - name: Run the documented setup
+        run: ./setup.sh
+      - name: Tests with LeRobot installed
+        run: |
+          conda activate lerobot
+          python -m unittest discover -s tests -v
+      - name: Every command so builds
+        run: |
+          conda activate lerobot
+          so show
+      - name: Versions that were installed
+        run: |
+          conda activate lerobot
+          python -c "import lerobot, torch, sys; print('python', sys.version.split()[0], '| lerobot', lerobot.__version__, '| torch', torch.__version__)"
+          ffmpeg -hide_banner -encoders | grep -i svtav1
+
+  windows-manual:
+    name: manual steps (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: lerobot
+          python-version: "3.12"
+          channels: conda-forge
+      - name: Install as docs/SETUP.md describes (CPU build of torch; the GPU build needs an NVIDIA card)
+        run: |
+          conda install -y -c conda-forge ffmpeg
+          python -m pip install "lerobot[core_scripts,training,feetech]==0.7.0"
+          python -m pip install -e . --no-deps
+      - name: Tests with LeRobot installed
+        run: python -m unittest discover -s tests -v
+      - name: Every command so builds
+        run: so show

@@ -1,0 +1,373 @@
+<title>Battery Station Playbook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column of work-instruction sheets; each strategy opens with its renders, then rules, counts and steps. */
+:root {
+  --bg: #f1f5f2; --surface: #ffffff; --ink: #14201b; --muted: #55645d; --rule: #d3dcd6;
+  --line: #1c6a53; --dots: #2b4ea6; --battery: #c2261c;
+  --cork: #a98258; --cap: #7f58b3; --card: #7d5a33; --chip-ink: #ffffff;
+  --note-bg: #fbf2dd; --note-rule: #d9b45a; --soft: #e6ede9;
+  --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9babA3; --rule: #2a3832;
+    --line: #5cc6a3; --dots: #8ba8f2; --battery: #f26d60;
+    --cork: #cfab82; --cap: #b79ae0; --card: #c79d6e; --chip-ink: #0f1613;
+    --note-bg: #2a2413; --note-rule: #8f7430; --soft: #1e2a25; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832;
+  --line: #5cc6a3; --dots: #8ba8f2; --battery: #f26d60;
+  --cork: #cfab82; --cap: #b79ae0; --card: #c79d6e; --chip-ink: #0f1613;
+  --note-bg: #2a2413; --note-rule: #8f7430; --soft: #1e2a25; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 61rem; margin: 0 auto; padding-block: 2rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.1rem, 6vw, 3.2rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 4.4vw, 2.2rem); font-weight: 700; }
+h3 { font-size: 1.25rem; font-weight: 600; margin-top: 0.4rem; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--line); text-underline-offset: 0.15em; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--dots); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.9em; background: var(--soft); padding: 0.08em 0.35em; border-radius: 3px; overflow-wrap: anywhere; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 1rem; }
+.stack-l { display: flex; flex-direction: column; gap: 1.6rem; }
+header.top { display: flex; flex-direction: column; gap: 0.9rem; padding-bottom: 1.6rem; border-bottom: 2px solid var(--ink); }
+.lead { font-size: 1.14rem; }
+nav.jump { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; font-family: var(--mono); font-size: 0.86rem; }
+section { padding-top: 2.6rem; display: flex; flex-direction: column; gap: 1.4rem; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.15rem 0.55rem; border-radius: 3px; color: var(--chip-ink); }
+.tag.line { background: var(--line); } .tag.dots { background: var(--dots); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+figure img { display: block; width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--rule); }
+figcaption { font-size: 0.9rem; color: var(--muted); max-width: 70ch; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; }
+.quad { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
+ul, ol { margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; max-width: 70ch; }
+li > strong:first-child { font-weight: 600; }
+.tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--mono); font-weight: 500; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--soft); white-space: nowrap; }
+td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.note { background: var(--note-bg); border-left: 4px solid var(--note-rule); padding: 0.8rem 1rem; border-radius: 0 4px 4px 0; }
+.note p { max-width: 72ch; }
+.count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.9rem; font-family: var(--mono); font-size: 1.02rem; }
+.count b { font-family: var(--display); font-size: 2.2rem; font-weight: 700; line-height: 1; }
+.count .l { color: var(--line); } .count .d { color: var(--dots); }
+/* recording list */
+.listbar { display: flex; flex-wrap: wrap; gap: 0.5rem 0.8rem; align-items: center; }
+.listbar button { font: 500 0.86rem var(--mono); padding: 0.4rem 0.75rem; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 4px; cursor: pointer; }
+.listbar button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.progress { font-family: var(--mono); font-size: 0.86rem; color: var(--muted); margin-left: auto; }
+.listbox { max-height: 30rem; overflow: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+.listbox table { font-size: 0.92rem; }
+.listbox th { position: sticky; top: 0; z-index: 1; }
+.slots { display: flex; gap: 4px; }
+.slot { width: 1.75rem; height: 1.75rem; border-radius: 3px; display: grid; place-items: center; font: 500 0.8rem var(--mono); color: var(--chip-ink); flex: none; }
+.slot.B { background: var(--battery); } .slot.K { background: var(--cork); } .slot.P { background: var(--cap); } .slot.C { background: var(--card); }
+.slot.E { background: transparent; border: 1px dashed var(--muted); color: var(--muted); }
+tr.done td { opacity: 0.45; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; font-size: 0.88rem; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 0.4rem; align-items: center; }
+footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">Hackathon LeRobot Bilbao · 20 to 22 Nov 2026 · SO-101 with ACT</span>
+  <h1>Battery Station Playbook</h1>
+  <p class="lead">The arm pulls the battery out of a tray of rubbish and drops it in a bin. The battery is the only thing it ever picks up; the rubbish stays where it is. We score with the <strong>line strategy</strong>: four objects shuffled over five places on one arc. The <strong>dots strategy</strong> is an upgrade we only build once the line passes its test.</p>
+  <nav class="jump" aria-label="Sections">
+    <a href="#glance">At a glance</a><a href="#line">Line strategy</a><a href="#list">Recording list</a><a href="#dots">Dots strategy</a><a href="#odds">Odds of 10 of 10</a><a href="#sources">Sources</a>
+  </nav>
+</header>
+
+<section id="glance">
+  <h2>At a glance</h2>
+  <div class="tbl"><table>
+    <tr><th></th><th>Line</th><th>Dots</th></tr>
+    <tr><td>Where objects may sit</td><td>5 places on one arc, 20 cm from the arm</td><td>9 places on two arcs, 20 cm and 27 cm</td></tr>
+    <tr><td>Possible arrangements of 4 objects</td><td class="num">120</td><td class="num">3,024</td></tr>
+    <tr><td>Can we record every arrangement?</td><td>Yes, in the first 120 episodes</td><td>No, under a tenth of them</td></tr>
+    <tr><td>Reach distances the arm must learn</td><td class="num">1</td><td class="num">2</td></tr>
+    <tr><td>Recordings</td><td>200 (about 10 h)</td><td>120 more on top of the line (about 6 h)</td></tr>
+    <tr><td>Role this weekend</td><td>The five scored attempts</td><td>Upgrade, only after the line passes</td></tr>
+  </table></div>
+  <p>The live demo is 30 of the 100 points, at 6 points per successful attempt, so the plan protects those five attempts first.</p>
+</section>
+
+<section id="line">
+  <span class="tag line">Line strategy</span>
+  <h2>Four objects on five places of one arc</h2>
+  <div class="pair">
+    <figure><img src="img/line-main.jpg" width="1600" height="1000" alt="Render of the tray from the jury's side: five numbered places on an arc in front of the arm, holding a cork, the red battery, an empty place, a bottle cap and a piece of cardboard, with a blue bin taped to the board."><figcaption>From the jury's side. Place 3 is empty in this arrangement. The white block marks where the arm stands.</figcaption></figure>
+    <figure><img src="img/line-top.jpg" width="1320" height="880" alt="Top view of the same tray: places 1 to 5 on an arc around the arm, bin to the right."><figcaption>From above, as the overhead camera and the operator see it. Places are numbered left to right. The battery shows as the red block with two terminals.</figcaption></figure>
+  </div>
+
+  <div class="stack">
+    <h3>The rules of the station</h3>
+    <ul>
+      <li><strong>Places:</strong> five, on an arc 20 cm from the arm's turning axis, at 25° steps. That puts their centres about 8.7 cm apart. Each has a drawn outline and a low L-shaped stop, so an object pushed into the corner always sits in the same spot.</li>
+      <li><strong>The battery:</strong> the one object the arm picks up. Make it a square block of red foam, 3.5 cm by 3.5 cm and 4.5 cm tall, with a black tape band at the top, two terminals and + − drawn on. Square, so a quarter turn looks and grips the same. A real battery is too hard and smooth for this gripper.</li>
+      <li><strong>How it is placed:</strong> standing upright and pushed into the corner of its place.</li>
+      <li><strong>The rubbish:</strong> three different pieces that are never picked up: a cork, a bottle cap and a piece of cardboard.</li>
+      <li><strong>One place stays empty.</strong> Which one changes with every arrangement.</li>
+      <li><strong>Bin:</strong> taped to the board beyond place 5. It never moves.</li>
+      <li><strong>Task text:</strong> <code>Put the battery in the bin</code>, set in <code>hackathon.toml</code> before the first real recording and never changed afterwards.</li>
+    </ul>
+    <p>Because the rubbish is never grasped, it only has to stay put, sit lower than the battery, be matt, and be nowhere near red, orange or pink.</p>
+  </div>
+
+  <div class="stack">
+    <h3>The variations</h3>
+    <div class="count"><span><b class="l">5</b> battery places</span><span>×</span><span><b class="l">4</b> choices of empty place</span><span>×</span><span><b class="l">6</b> orders of rubbish</span><span>=</span><span><b class="l">120</b> arrangements</span></div>
+    <div class="quad">
+      <figure><img src="img/line-var-1.jpg" width="900" height="600" alt="Top view: battery at place 1, cap at 2, place 3 empty, cardboard at 4, cork at 5."><figcaption>Battery at 1, place 3 empty.</figcaption></figure>
+      <figure><img src="img/line-var-2.jpg" width="900" height="600" alt="Top view: cork at place 1, cardboard at 2, battery at 3, place 4 empty, cap at 5."><figcaption>Battery at 3, place 4 empty.</figcaption></figure>
+      <figure><img src="img/line-var-3.jpg" width="900" height="600" alt="Top view: cardboard at place 1, place 2 empty, cork at 3, cap at 4, battery at 5."><figcaption>Battery at 5, place 2 empty.</figcaption></figure>
+      <figure><img src="img/line-var-4.jpg" width="900" height="600" alt="Top view: cap at place 1, cork at 2, cardboard at 3, battery at 4, place 5 empty."><figcaption>Battery at 4, place 5 empty.</figcaption></figure>
+    </div>
+    <p>Whatever a judge sets up is one of these 120, and the first 120 episodes record each of them once. No scored attempt shows the arm a scene it has not seen.</p>
+  </div>
+
+  <div class="stack">
+    <h3>Why this is the reliable version</h3>
+    <ul>
+      <li><strong>One reach.</strong> Every pick is the same arm posture turned at the base, so the demonstrations look alike and the model has one motion to learn.</li>
+      <li><strong>No blocked jaws.</strong> Neighbours are always 8.7 cm away to the side. Open the jaws front to back and neither jaw passes near them.</li>
+      <li><strong>Many recordings per position.</strong> 200 episodes over five battery places is 40 each. LeRobot's guide asks for at least 10 per location.</li>
+      <li><strong>The evidence points this way.</strong> In an independent SO-101 test, ACT placed 12 of 12 at positions it was trained on and 0 of 36 at shifted ones.</li>
+    </ul>
+  </div>
+
+  <div class="stack">
+    <h3>Recording plan: 200 episodes in three rounds</h3>
+    <div class="tbl"><table>
+      <tr><th>Round</th><th>Episodes</th><th>What you record</th><th>Recording</th><th>Then train</th></tr>
+      <tr><td>1</td><td class="num">1 to 60</td><td>Half of the 120 arrangements, 12 per battery place</td><td class="num">about 3 h</td><td class="num">20,000 steps · 1 h 48</td></tr>
+      <tr><td>2</td><td class="num">61 to 120</td><td>The other half. Every arrangement is now recorded once</td><td class="num">about 3 h</td><td class="num">38,000 steps · 3 h 24</td></tr>
+      <tr><td>3</td><td class="num">121 to 200</td><td>10 with the battery alone (2 per place), then 70 repeats aimed at whatever failed in testing</td><td class="num">about 4 h</td><td class="num">63,000 steps · 5 h 39</td></tr>
+    </table></div>
+    <p>Training times are for this laptop at its measured 3.1 steps per second, assuming 12-second episodes and about 7 passes over the data. <code>so plan</code> gives the real step count once recordings exist. Recording times use the organisers' pace of about 3 minutes per episode.</p>
+    <div class="note"><p><strong>Schedule to aim for.</strong> Round 1 on Friday evening and train overnight. Round 2 on Saturday morning, running through 11:30 to 12:30 so the model sees Sunday's demo-hour light. Round 3 on Saturday from late afternoon, then the final training overnight. These times are a proposal: ask a mentor when the room closes.</p></div>
+  </div>
+
+  <div class="stack" id="list">
+    <h3>Recording list</h3>
+    <p>Set up each episode as its row shows, left to right for places 1 to 5. Battery places rotate 1 to 5, and each round is balanced: every battery place meets every empty place equally often. The same list is in the repository as <code>docs/strategy/recording-list.csv</code>.</p>
+    <div class="legend" aria-label="Legend">
+      <span><i class="slot B">B</i>battery</span><span><i class="slot K">K</i>cork</span><span><i class="slot P">P</i>cap</span><span><i class="slot C">C</i>cardboard</span><span><i class="slot E">·</i>empty</span>
+    </div>
+    <div class="listbar">
+      <button type="button" id="r1" aria-pressed="true">Round 1 · 1 to 60</button>
+      <button type="button" id="r2" aria-pressed="false">Round 2 · 61 to 120</button>
+      <button type="button" id="r3" aria-pressed="false">Round 3 · battery alone</button>
+      <span class="progress" id="progress" aria-live="polite"></span>
+    </div>
+    <div class="listbox"><table id="eplist">
+      <thead><tr><th class="num">Episode</th><th>Places 1 to 5</th><th class="num">Battery at</th><th>Recorded</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p style="color:var(--muted);font-size:0.9rem">Ticks are saved in this browser only. If you delete and redo an episode, the dataset's own episode numbers shift, so keep a paper tally as well.</p>
+  </div>
+
+  <div class="stack">
+    <h3>Every recording the same way</h3>
+    <ul>
+      <li>Start and end at the rest pose, with the gripper out of the overhead camera's view of the places.</li>
+      <li>Go straight to the battery. No hovering, searching or correcting.</li>
+      <li>Open the jaws front to back, lift straight up until the battery clears its neighbours, then swing to the bin.</li>
+      <li>Release low over the middle of the bin.</li>
+      <li>In about one recording in four, place the battery slightly wrong: up to 1 cm out of its corner, or turned up to about 15°. Keep the rest exact.</li>
+      <li>One person records everything. Rewatch what <code>so qa</code> flags and delete weak episodes.</li>
+    </ul>
+  </div>
+
+  <div class="stack">
+    <h3>Tests and gates</h3>
+    <div class="tbl"><table>
+      <tr><th>When</th><th>Test</th><th>Gate</th></tr>
+      <tr><td>After round 1</td><td>15 attempts, 3 per battery place</td><td>The arm goes to the battery every time. Grasp problems are fixed before round 2</td></tr>
+      <tr><td>After round 2</td><td>30 attempts, 6 per battery place, arrangements picked by a teammate</td><td>28 of 30 or better. Each place that misses twice gets 10 of round 3's repeats</td></tr>
+      <tr><td>Sunday morning</td><td>30 attempts with the final model, in demo light</td><td>Demo whichever of the last two models scored higher</td></tr>
+    </table></div>
+    <p>For each miss, note whether the arm went to the wrong place or reached the right place and fumbled the grasp. Record it with <code>so eval</code>. Only the first kind is a finding problem.</p>
+    <p><strong>Placement tolerance.</strong> After round 2, test two places with the battery 1, 2 and 3 cm out of its corner and turned 15°, 30° and 45°. The largest offset that still works is the number to give a judge who asks "what if I put it here?"</p>
+  </div>
+
+  <div class="stack">
+    <h3>The demo</h3>
+    <ol>
+      <li>Hand the judge the four objects and say: "Put them on any four of these five places, in any order."</li>
+      <li>Start the run: <code>so rollout --step &lt;best step&gt; --duration 30</code>.</li>
+      <li>Repeat for five scored attempts.</li>
+      <li>After the five, offer extras that cost nothing if they miss: rubbish scattered freely, or the dots layout if it is built.</li>
+    </ol>
+    <p><strong>Fallback.</strong> If picking among rubbish proves unreliable, demo with the battery alone. Round 3's ten battery-alone episodes exist for this.</p>
+  </div>
+</section>
+
+<section id="dots">
+  <span class="tag dots">Dots strategy</span>
+  <h2>Nine places on two arcs</h2>
+  <div class="pair">
+    <figure><img src="img/dots-main.jpg" width="1600" height="1000" alt="Render from the jury's side: nine numbered dots on two arcs, with the battery on outer dot 7, a cork on dot 2, a cap on dot 4 and cardboard on dot 9."><figcaption>From the jury's side. White dots are the line's five places; yellow dots are the four added ones.</figcaption></figure>
+    <figure><img src="img/dots-top.jpg" width="1320" height="880" alt="Top view of the nine dots: inner arc numbered 1 to 5, outer arc numbered 6 to 9."><figcaption>From above. Dots 6 to 9 sit 27 cm out, between the angles of the inner five.</figcaption></figure>
+  </div>
+  <div class="pair">
+    <figure><img src="img/dots-var-1.jpg" width="900" height="600" alt="Top view: battery on inner dot 3, cork on 6, cap on 8, cardboard on 1."><figcaption>Battery on an inner dot, rubbish on both arcs.</figcaption></figure>
+    <figure><img src="img/dots-var-2.jpg" width="900" height="600" alt="Top view: battery on outer dot 9, cork on 5, cap on 7, cardboard on 3."><figcaption>Battery on an outer dot next to the bin.</figcaption></figure>
+  </div>
+
+  <div class="stack">
+    <h3>What changes</h3>
+    <ul>
+      <li><strong>Places:</strong> the line's five, plus four on a second arc 27 cm from the arm. The nearest inner and outer dots are 8.6 cm apart.</li>
+      <li><strong>Marks:</strong> faint pencil dots, with no outlines and no corner stops, so the tray looks unmarked. The renders draw them large so you can see them.</li>
+      <li><strong>All four objects sit on dots.</strong> Rubbish is not dropped freely. That keeps the jaws clear and keeps the scenes countable.</li>
+    </ul>
+    <div class="count"><span><b class="d">9</b> battery places</span><span>×</span><span><b class="d">336</b> ways to place three pieces of rubbish</span><span>=</span><span><b class="d">3,024</b> arrangements</span></div>
+  </div>
+
+  <div class="stack">
+    <h3>Why it is harder</h3>
+    <ul>
+      <li><strong>You cannot record every scene.</strong> The arm has to cope with arrangements it never saw. It may manage, since it only needs to go to the red object, but the line never has to rely on that.</li>
+      <li><strong>Two reach distances.</strong> The outer arc needs a different arm posture, which is a second motion to learn.</li>
+      <li><strong>Fewer recordings per battery place</strong> for the same effort.</li>
+    </ul>
+  </div>
+
+  <div class="stack">
+    <h3>How to make it feasible</h3>
+    <ol>
+      <li><strong>Build it on top of the line.</strong> Every line recording is already a valid dots recording for the inner arc. Keep the line model as the entry that is guaranteed to exist.</li>
+      <li><strong>Start only if the line is ahead of schedule.</strong> Go if the round 2 model scores 28 of 30 by about 14:00 on Saturday. Otherwise spend round 3 on the line.</li>
+      <li><strong>Check the outer arc by hand first.</strong> Using teleoperation, grasp the battery ten times at each outer dot. The elbow must still be bent and both cameras must see the battery. If it strains at 27 cm, pull the arc in to 25 cm.</li>
+      <li><strong>Record 120 more episodes, about 6 hours.</strong>
+        <ul>
+          <li>80 with the battery on an outer dot, 20 per dot, rubbish spread over all the other dots.</li>
+          <li>40 with the battery on an inner dot, 8 per dot, with at least one piece of rubbish on the outer arc.</li>
+        </ul>
+      </li>
+      <li><strong>Spread the rubbish evenly.</strong> For each battery dot, rotate the rubbish so every other dot is occupied about equally often.</li>
+      <li><strong>Retrain on everything overnight.</strong> 240 episodes is about 75,600 steps, 6 h 46 on this laptop. A cloud GPU frees the laptop, if the cloud route has been tested by then.</li>
+      <li><strong>Check for damage before trusting it.</strong> Test the five inner dots again, 15 attempts, then the four outer dots, 5 attempts each. Demo the dots only if both score at least as well as the line model. Otherwise score with the line model and show the dots afterwards.</li>
+    </ol>
+    <div class="note"><p><strong>If time is short, shrink it.</strong> Two outer dots instead of four cuts the arrangements from 3,024 to 840 and the extra recordings to about 60. Three identical pieces of rubbish cut the arrangements by six, to 504 with nine dots.</p></div>
+  </div>
+</section>
+
+<section id="odds">
+  <h2>What 10 of 10 takes</h2>
+  <p>No layout guarantees a perfect run. This is how reliable each single attempt has to be:</p>
+  <div class="tbl"><table>
+    <tr><th>Success per attempt</th><th>Chance of 5 of 5</th><th>Chance of 10 of 10</th></tr>
+    <tr><td class="num">90%</td><td class="num">59%</td><td class="num">35%</td></tr>
+    <tr><td class="num">95%</td><td class="num">77%</td><td class="num">60%</td></tr>
+    <tr><td class="num">98%</td><td class="num">90%</td><td class="num">82%</td></tr>
+    <tr><td class="num">99%</td><td class="num">95%</td><td class="num">90%</td></tr>
+  </table></div>
+  <p>The jury scores five attempts. A 30-attempt test with at most two misses is the practical sign that you are in the 95% range or better.</p>
+</section>
+
+<section id="sources">
+  <h2>What is measured and what is not</h2>
+  <ul>
+    <li><strong>Measured on this laptop:</strong> ACT training speed, 3.1 steps per second at batch size 8.</li>
+    <li><strong>From published tests:</strong> the comparisons below. None used this exact task.</li>
+    <li><strong>Estimates:</strong> episode counts, step counts, the 28 of 30 gate, the schedule and every distance on the board. Nothing here has run on the real arm yet, so check reach and grasp on Friday before the first recording.</li>
+  </ul>
+  <ul>
+    <li><a href="https://github.com/charlotte-rgb/so101-policy-benchmark">SO-101 policy benchmark</a>: ACT 12 of 12 at trained positions, 0 of 36 at shifted ones.</li>
+    <li><a href="https://arxiv.org/html/2602.24143v1">Robust Skills, Brittle Grounding</a>: success falls as the area objects can occupy grows.</li>
+    <li><a href="https://arxiv.org/html/2411.01850v3">ManiBox</a>: the data needed grows with the size of the placement area.</li>
+    <li><a href="https://data-scaling-laws.github.io/">Data Scaling Laws in Imitation Learning</a>: extra demonstrations of the same setting stop helping past a threshold.</li>
+    <li><a href="https://arxiv.org/html/2606.08881v2">Benchmarking VLA Models on SO-101</a> and <a href="https://arxiv.org/html/2506.01844">the SmolVLA paper</a>: why ACT is the model for the demo.</li>
+    <li><a href="https://huggingface.co/docs/lerobot/il_robots">LeRobot imitation learning guide</a>: at least 10 episodes per location.</li>
+  </ul>
+</section>
+
+<footer>Renders are 3D mock-ups built to the plan's starting dimensions, not photos of the real station.</footer>
+</div>
+
+<script>
+(function () {
+  var R12 = "BKPC- PBK-C K-BCP C-PBK CP-KB BCK-P CBKP- -PBCK K-CBP KP-CB BKP-C KBC-P KCBP- KCPB- P-KCB BPC-K CBP-K CKBP- -KCBP -PKCB B-KCP -BCKP PKB-C P-KBC P-CKB BP-KC PBKC- C-BKP CK-BP -CKPB BPCK- KB-PC CPB-K -PCBK PCK-B BK-PC PBCK- -CBKP PK-BC -KCPB BCKP- CB-KP -KBCP KP-BC KPC-B B-PKC KB-CP KCB-P PCKB- CK-PB BC-KP -BKCP KPBC- -KPBC C-KPB B-KPC -BPCK P-BCK CKPB- KCP-B BK-CP KBPC- CPBK- KPCB- KC-PB BPK-C KBCP- -PBKC -CKBP -CPKB B-PCK PB-CK PCBK- PKCB- K-CPB BCPK- PB-KC PKBC- C-KBP K-PCB BCP-K KBP-C CKB-P CPKB- PK-CB BKCP- PBC-K P-BKC CP-BK C-PKB B-CKP CBK-P PCB-K K-PBC -KPCB BPKC- CBPK- -CBPK KC-BP CKP-B BP-CK -BPKC -KBPC P-CBK CPK-B BKC-P -BKPC K-BPC -PKBC PC-KB B-CPK CB-PK C-BPK PC-BK -PCKB BC-PK -BCPK KPB-C -CPBK PKC-B".split(" ");
+  var ALONE = "B---- -B--- --B-- ---B- ----B B---- -B--- --B-- ---B- ----B".split(" ");
+  var ALL = R12.concat(ALONE);
+  var NAMES = { B: "battery", K: "cork", P: "cap", C: "cardboard", "-": "empty" };
+  var KEY = "battery-station-recorded";
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  var ranges = { r1: [1, 60], r2: [61, 120], r3: [121, 130] };
+  var current = "r1";
+  var body = document.querySelector("#eplist tbody");
+  var progress = document.getElementById("progress");
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+  function count() {
+    var n = 0;
+    for (var i = 1; i <= ALL.length; i++) if (done[i]) n++;
+    progress.textContent = n + " of " + ALL.length + " listed episodes recorded";
+  }
+  function render() {
+    var lo = ranges[current][0], hi = ranges[current][1];
+    body.textContent = "";
+    for (var ep = lo; ep <= hi; ep++) {
+      var code = ALL[ep - 1];
+      var tr = document.createElement("tr");
+      if (done[ep]) tr.className = "done";
+      var tdN = document.createElement("td"); tdN.className = "num"; tdN.textContent = ep;
+      var tdS = document.createElement("td");
+      var slots = document.createElement("div"); slots.className = "slots";
+      var words = [];
+      for (var i = 0; i < 5; i++) {
+        var c = code.charAt(i);
+        var s = document.createElement("i");
+        s.className = "slot " + (c === "-" ? "E" : c);
+        s.textContent = c === "-" ? "·" : c;
+        s.title = "Place " + (i + 1) + ": " + NAMES[c];
+        slots.appendChild(s);
+        words.push((i + 1) + " " + NAMES[c]);
+      }
+      slots.setAttribute("role", "img");
+      slots.setAttribute("aria-label", words.join(", "));
+      tdS.appendChild(slots);
+      var tdB = document.createElement("td"); tdB.className = "num"; tdB.textContent = "place " + (code.indexOf("B") + 1);
+      var tdC = document.createElement("td");
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "ep-" + ep; cb.checked = !!done[ep];
+      cb.setAttribute("aria-label", "Episode " + ep + " recorded");
+      (function (ep, tr) {
+        cb.addEventListener("change", function () {
+          if (this.checked) done[ep] = 1; else delete done[ep];
+          tr.className = this.checked ? "done" : "";
+          save(); count();
+        });
+      })(ep, tr);
+      tdC.appendChild(cb);
+      tr.appendChild(tdN); tr.appendChild(tdS); tr.appendChild(tdB); tr.appendChild(tdC);
+      body.appendChild(tr);
+    }
+    ["r1", "r2", "r3"].forEach(function (id) {
+      document.getElementById(id).setAttribute("aria-pressed", id === current ? "true" : "false");
+    });
+    count();
+  }
+  ["r1", "r2", "r3"].forEach(function (id) {
+    document.getElementById(id).addEventListener("click", function () { current = id; render(); });
+  });
+  render();
+})();
+</script>

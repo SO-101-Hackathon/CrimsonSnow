@@ -1,0 +1,79 @@
+# =============================================================================
+#  Single source of truth for every `so <command>`.  Edit -> save -> run.
+#  `so show` prints the exact lerobot-* commands this file produces.
+# =============================================================================
+
+[hf]
+# Hugging Face username. "" = detected from `hf auth login`.
+# Not logged in? Everything still works locally (nothing is uploaded).
+user = ""
+
+# ----------------------------------------------------------------------------
+#  Arms.  `id` names the calibration file: pick it once and NEVER change it,
+#  and never give the leader the follower's id (the arm would move wrong
+#  without any error message).
+# ----------------------------------------------------------------------------
+[robot]                      # FOLLOWER: white arm with the gripper
+type = "so101_follower"
+id = "h_follower"
+port = "auto"                # "auto" = found by USB serial (run `so ports assign` once) | or "COM5"
+
+[teleop]                     # LEADER: black arm with the handle
+type = "so101_leader"
+id = "h_leader"
+port = "auto"
+
+# ----------------------------------------------------------------------------
+#  Cameras.  The names become dataset keys (observation.images.<name>).
+#  A trained policy needs the SAME names, resolution and physical placement at
+#  rollout time.  Find indices with `so cameras`.  On this laptop index 0 is
+#  normally the built-in webcam, so the USB cameras are usually 1 and 2.
+# ----------------------------------------------------------------------------
+[cameras.top]
+index_or_path = 1
+width = 640
+height = 480
+fps = 30
+
+[cameras.wrist]
+index_or_path = 2
+width = 640
+height = 480
+fps = 30
+
+# ----------------------------------------------------------------------------
+#  Task.  `description` is stored in the dataset and passed to the policy:
+#  keep it byte-for-byte identical between recording and rollout.
+# ----------------------------------------------------------------------------
+[task]
+slug = "battery"             # short name used in dataset / policy / output folder names
+description = "Put the battery in the bin"
+
+[record]
+num_episodes = 60            # per `so record` call (when resuming: episodes to ADD); one round of docs/strategy/recording-list.csv
+episode_time_s = 30          # max seconds per episode (press -> or n to finish early)
+reset_time_s = 10            # seconds to reset the scene between episodes
+display_data = true          # live Rerun viewer with cameras + joints
+streaming_encoding = true    # encode video while recording: episode save 0.3 s instead of ~15 s+ (measured here)
+encoder_threads = 2          # keeps the 30 Hz loop steady on this CPU (measured: 0 ticks over budget)
+push_to_hub = true           # upload when the session ends (needs `hf auth login`)
+private = false              # public dataset = +3 bonus points
+extra = []                   # extra raw lerobot-record flags. Do NOT use rgb_encoder.vcodec=auto here: NVENC crashes
+
+[train]
+policy = "act"               # act | smolvla | diffusion
+steps = 20000                # first run short; `so plan` suggests a value from your dataset size
+batch_size = 8               # ACT: 8 is the sweet spot on this GPU (16 = +7% throughput for 6.4 GB VRAM)
+smolvla_batch_size = 8       # used instead of batch_size when policy = "smolvla" (2.9 GB VRAM)
+num_workers = 4
+save_freq = 5000             # checkpoint every N steps (try intermediate ones with `so rollout --step`)
+mixed_precision = ""         # "" = fp32 (default, 3.1 steps/s here) | "fp16" = ~20% faster (3.7 steps/s), see RUNBOOK
+trackio = true               # local loss curves: `trackio show --project lerobot`
+augment = false              # true = random brightness/contrast/shift on images (more robust to light changes)
+push_to_hub = true           # upload the final policy (needs `hf auth login`)
+extra = []                   # extra raw lerobot-train flags
+
+[rollout]
+duration = 60                # seconds per run in base mode (0 = until Ctrl+C)
+display_data = false
+extra = []                   # extra raw lerobot-rollout flags, e.g. ["--interpolation_multiplier=2"]

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# so - run the SO-101 toolkit on Linux / macOS / WSL / Git Bash.
+#   ./so doctor      ./so record      ./so train      ./so rollout
+# Activate the `lerobot` environment first (conda activate lerobot).
+set -e
+cd "$(dirname "$0")"
+export PYTHONUTF8=1
+exec python -m sokit "$@"
