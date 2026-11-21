@@ -1,0 +1,8 @@
+timestamp,policy,result,note
+2026-11-21 16:32:31,sensecraft:battery sample - ACT,success,"[40 s, time limit, gripper held]"
+2026-11-21 16:33:04,sensecraft:battery sample - ACT,success,"[20 s, arm back at rest, gripper held]"
+2026-11-21 16:33:56,sensecraft:battery sample - ACT,fail,"up [28 s, arm back at rest, gripper held]"
+2026-11-21 16:34:56,sensecraft:battery sample - ACT,fail,"[40 s, time limit, gripper held]"
+2026-11-21 16:35:43,sensecraft:battery sample - ACT,fail,"[20 s, arm back at rest, gripper never_opened]"
+2026-11-21 16:36:28,sensecraft:battery sample - ACT,fail,"[40 s, time limit, gripper held]"
+2026-11-21 16:37:05,sensecraft:battery sample - ACT,success,"[22 s, arm back at rest, gripper held]"

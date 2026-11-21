@@ -9,9 +9,15 @@ description = "Config-driven helper around the official lerobot-* commands for t
 requires-python = ">=3.12"
 dependencies = ["lerobot[core_scripts,training,feetech]==0.7.0"]
 
+[project.optional-dependencies]
+demo = ["anthropic>=2.12", "openai>=3.57"]  # camera check of `so demo`; without them the gripper position decides
+
 # Optional: `pip install -e . --no-deps` inside the lerobot environment gives you a global `so` command.
 [project.scripts]
 so = "sokit.cli:main"
 
 [tool.setuptools]
 packages = ["sokit"]
+
+[tool.setuptools.package-data]
+sokit = ["panel.html"]  # the page `so panel` serves

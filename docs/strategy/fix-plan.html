@@ -1,0 +1,280 @@
+<title>Battery Fix Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one work sheet. What fails and why, the evening in order, the rules that protect the normal
+   cases, a pointer to the recording sheet, and the exam that compares the model now and after. */
+:root {
+  --bg: #f1f5f2; --surface: #ffffff; --ink: #14201b; --muted: #55645d; --rule: #d3dcd6; --soft: #e6ede9;
+  --stick: #b08550; --tnt: #d6336c; --duck: #f2c200; --car: #2f6fde;
+  --on-dark: #ffffff; --on-light: #1c1a05; --go: #1c6a53; --warn-bg: #fbf2dd; --warn-rule: #d9b45a; --bad: #b3261e;
+  --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+    --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff;
+    --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+  --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff;
+  --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 54rem; margin: 0 auto; padding-block: 1.5rem 4rem; display: flex; flex-direction: column; gap: 1.75rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 700; }
+h2 { font-size: 1.5rem; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+section { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 1.2rem; border-bottom: 2px solid var(--ink); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--car); outline-offset: 2px; }
+a { color: var(--car); }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--soft); padding: 0.05rem 0.3rem; border-radius: 3px; overflow-wrap: anywhere; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+.tablebox { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 0.92rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td b { font-weight: 600; }
+
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 0.5rem; }
+ol.steps li { counter-increment: step; display: grid; grid-template-columns: 2rem 5.2rem 1fr; gap: 0.6rem; align-items: baseline;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.75rem; }
+ol.steps li::before { content: counter(step); font-family: var(--display); font-weight: 700; font-size: 1.3rem; }
+ol.steps .dur { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+ol.steps .what { min-width: 0; }
+ol.steps .what b { font-weight: 600; }
+@media (max-width: 34rem) { ol.steps li { grid-template-columns: 1.6rem 1fr; } ol.steps .dur { grid-column: 2; } ol.steps .what { grid-column: 2; } }
+
+ul.rules { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; max-width: 70ch; }
+
+.golink { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--go); border-radius: 6px;
+  padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.golink a { font-family: var(--display); font-weight: 700; font-size: 1.3rem; }
+
+.status { font-family: var(--mono); font-size: 0.84rem; padding: 0.5rem 0.75rem; border-radius: 4px; background: var(--soft); color: var(--muted); }
+.status.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-rule); color: var(--ink); }
+.status.bad { background: var(--warn-bg); border-left: 4px solid var(--bad); color: var(--ink); }
+.chip { width: 1.6rem; height: 1.6rem; border-radius: 3px; display: inline-grid; place-items: center; font: 500 0.78rem var(--mono); flex: none; }
+.chip.B { background: var(--stick); color: var(--on-light); } .chip.D { background: var(--duck); color: var(--on-light); }
+.chip.C { background: var(--car); color: var(--on-dark); } .chip.T { background: var(--tnt); color: var(--on-dark); }
+.chips { display: flex; gap: 4px; }
+.listbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.exam-row { display: grid; grid-template-columns: 2.8rem auto 1fr auto; gap: 0.6rem; align-items: center; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); }
+.exam-row:last-child { border-bottom: 0; }
+.exam-row .n { font-family: var(--mono); font-weight: 500; }
+.exam-row .what { font-size: 0.86rem; min-width: 0; overflow-wrap: anywhere; }
+.exam-row .what .kind { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.resbox { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.res { font: 500 0.82rem var(--mono); min-width: 4.4rem; padding: 0.35rem 0.4rem; border-radius: 4px; border: 1px solid var(--rule); background: var(--surface); color: var(--muted); }
+.res.pass { background: var(--go); border-color: var(--go); color: var(--on-dark); }
+.res.fail { background: var(--bad); border-color: var(--bad); color: var(--on-dark); }
+.res:disabled { opacity: 0.5; cursor: default; }
+.score { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; font-family: var(--mono); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.score b { font-weight: 500; }
+@media (max-width: 34rem) {
+  .exam-row { grid-template-columns: 2.3rem 1fr; } .exam-row .chips { display: none; } .exam-row .resbox { grid-column: 1 / -1; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Team CrimsonSnow · SO-101 · after the first tests</span>
+    <h1>Battery Fix Plan</h1>
+    <p>The model is already accurate when the stick lies straight on its spot. Tonight we teach it the small slips that happen when someone puts the stick down by hand, without weakening the normal cases: 132 new recordings in one session, 12 of each change (turned left 20°, turned right 20°, moved up 2 cm, moved down 2 cm) and 84 straight, so straight stays 80 % of everything the model learns from.</p>
+  </header>
+
+  <section aria-labelledby="h-fail">
+    <h2 id="h-fail">What fails, and what we record for it</h2>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>What fails</th><th>Most likely why</th><th>What we record</th></tr></thead>
+        <tbody>
+          <tr><td><b>Stick turned left or right:</b> it does not even try.</td>
+              <td>It has only ever seen the stick lying straight.</td>
+              <td><b>24 episodes:</b> 12 turned left 20° and 12 turned right 20°, three of each at every place.</td></tr>
+          <tr><td><b>Grabbing below the middle of the stick:</b> it gets stuck. <b>At the very top:</b> it sometimes fails.</td>
+              <td>When the stick is a little off its spot, the arm still goes to the usual spot and closes on the end of the stick.</td>
+              <td><b>24 episodes:</b> 12 moved up 2 cm (away from the arm) and 12 moved down 2 cm (toward the arm), three of each at every place. Always close on the middle of the stick.</td></tr>
+          <tr><td><b>Big changes</b> (45°, across, far off the spot).</td>
+              <td>Too far from anything it has seen.</td>
+              <td><b>Left out on purpose.</b> For the demo we put the stick on its spot. Teaching big changes would take data away from the normal cases.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">In every new recording come down from straight above, so the wrist camera keeps the stick in view until the jaws close.</p>
+  </section>
+
+  <section aria-labelledby="h-plan">
+    <h2 id="h-plan">The evening, in order</h2>
+    <ol class="steps">
+      <li><span class="dur">10 min</span><span class="what"><b>Prepare.</b> Draw a 20° line on a piece of paper to lay next to the stick while placing it; take it away before you record. Mark the four spots on the mat with tape, with a short line for the stick's direction (for the demo too). In SenseCraft, continue recording into <code>battery sample</code>, or record into a new dataset and merge the two afterwards.</span></li>
+      <li><span class="dur">20 min</span><span class="what"><b>Exam the current model</b> (E1 to E20 below, column "Now"). SenseCraft closed, then <code>so try --sensecraft "battery sample"</code>. Type <code>s E7</code> or <code>f E7 stuck low</code> in the terminal and tap the result here too.</span></li>
+      <li><span class="dur">2.5 h</span><span class="what"><b>Record all 132 in one session</b> on the <a href="https://claude.ai/artifact/XiGU3smpYJKZ1eqfsWXCc2" target="_blank" rel="noopener">Battery Fix Recordings</a> page: 12 setups recorded seven times each, with single straight recordings in between.</span></li>
+      <li><span class="dur">10 min</span><span class="what"><b>Check and merge.</b> Watch five new episodes and delete any fumbled grab. Merge with <code>battery sample</code>: 108 + 132 = 240 episodes (80 % straight), named <code>battery v2</code>.</span></li>
+      <li><span class="dur">overnight</span><span class="what"><b>Train</b> ACT on <code>battery v2</code>, about 89,000 steps (more data needs more steps: 40,000 was right for 108 episodes).</span></li>
+      <li><span class="dur">Sunday</span><span class="what"><b>Exam the new model</b> (column "New"): <code>so try --sensecraft "battery v2"</code>. Demo with it only if it does at least as well on E1 to E12, the normal cases. Otherwise demo with the current model.</span></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-rules">
+    <h2 id="h-rules">So the normal cases stay strong</h2>
+    <ul class="rules">
+      <li><b>Train on old and new together, never on the new ones alone.</b> SenseCraft always trains from zero on the dataset you give it, so merge first.</li>
+      <li><b>Straight stays 80 %:</b> 108 old + 84 new straight = 192 of 240 episodes. Single straight recordings sit between the setups, so even if you stop early it never drops below 79.4 %.</li>
+      <li><b>Same movement as in the old recordings:</b> start at rest, come down from straight above, close on the middle of the stick, lift, drop low over the box, back to rest. For a turned stick, turn the wrist to line up with it before closing.</li>
+      <li><b>One person drives the leader arm for all 132,</b> so the movement style stays the same.</li>
+      <li><b>Keep everything else as it was:</b> cameras, box, mat, light, and the duck, car and TNT on the mat.</li>
+      <li><b>The exam decides.</b> The current model stays the demo model unless the new one is at least as good on the normal cases.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-rec">
+    <h2 id="h-rec">Recording</h2>
+    <div class="golink">
+      <a href="https://claude.ai/artifact/XiGU3smpYJKZ1eqfsWXCc2" target="_blank" rel="noopener">Battery Fix Recordings</a>
+      <span class="hint">All 132 in order, the next one drawn large, ticks saved for everyone, and the straight share live.</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-exam">
+    <h2 id="h-exam">Exam: the same 20 setups before and after</h2>
+    <div id="status" class="status" role="status" aria-live="polite">Loading saved results…</div>
+    <p>Set up each line, run it once with <code>so try</code>, and tap the result for each model: the one you have now and the new one. E1 to E12 are normal cases and decide which model you demo with; E13 to E20 show whether the fixes worked.</p>
+    <div class="score" id="score"></div>
+    <div class="listbox" id="exam"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var FULL = { B: "battery stick", D: "yellow duck", C: "blue car", T: "pink TNT" };
+  var SHIFT_TEXT = { up: "moved up 2 cm (away from the arm)", down: "moved down 2 cm (toward the arm)" };
+  var EXAM = [
+    ["BDCT", 0, null], ["DBCT", 0, null], ["DCBT", 0, null], ["DCTB", 0, null],
+    ["BTDC", 0, null], ["TBDC", 0, null], ["TDBC", 0, null], ["DTCB", 0, null],
+    ["BCTD", 0, null], ["CBTD", 0, null], ["CTBD", 0, null], ["CTDB", 0, null],
+    ["BDTC", -20, null], ["DBTC", 20, null], ["DTBC", -20, null], ["TDCB", 20, null],
+    ["BTCD", 0, "up"], ["TBCD", 0, "down"], ["TCBD", 0, "up"], ["TCDB", 0, "down"]
+  ].map(function (e, i) { return { id: "E" + (i + 1), code: e[0], place: e[0].indexOf("B"), angle: e[1], shift: e[2], normal: i < 12 }; });
+  var MODELS = [["now", "Now", "current model"], ["v2", "New", "new model"]];
+  var RES_TEXT = { "": "not run", pass: "pass", fail: "fail" };
+
+  function stickText(e) {
+    if (e.shift) return SHIFT_TEXT[e.shift];
+    return e.angle ? "turned " + (e.angle < 0 ? "left " : "right ") + Math.abs(e.angle) + "°" : "straight";
+  }
+
+  var exam = {}, pending = {}, mode = "loading", col = null;
+  var LOCAL_KEY = "battery-fix-plan-exam";
+  var el = function (id) { return document.getElementById(id); };
+  function canWrite() { return mode === "shared" || mode === "local"; }
+  function setStatus(text, kind) { var s = el("status"); s.textContent = text; s.className = "status" + (kind ? " " + kind : ""); }
+
+  function chipRow(code) {
+    var chips = document.createElement("span"); chips.className = "chips";
+    for (var p = 0; p < 4; p++) {
+      var c = code.charAt(p), chip = document.createElement("i");
+      chip.className = "chip " + c; chip.textContent = c; chip.title = "Place " + (p + 1) + ": " + FULL[c];
+      chips.appendChild(chip);
+    }
+    return chips;
+  }
+
+  function render() {
+    var box = el("exam"); box.textContent = "";
+    var tally = { now: [0, 0, 0, 0], v2: [0, 0, 0, 0] }; // normal pass, normal run, varied pass, varied run
+    EXAM.forEach(function (x) {
+      var row = document.createElement("div"); row.className = "exam-row";
+      var num = document.createElement("span"); num.className = "n"; num.textContent = x.id;
+      var what = document.createElement("span"); what.className = "what";
+      what.textContent = "Stick at place " + (x.place + 1) + ", " + stickText(x) + " ";
+      var tag = document.createElement("span"); tag.className = "kind"; tag.textContent = x.normal ? "normal" : "varied"; what.appendChild(tag);
+      var resbox = document.createElement("span"); resbox.className = "resbox";
+      MODELS.forEach(function (m) {
+        var key = m[0] + "-" + x.id, val = exam[key] || "";
+        if (val) { var t = tally[m[0]]; if (x.normal) { t[1]++; if (val === "pass") t[0]++; } else { t[3]++; if (val === "pass") t[2]++; } }
+        var btn = document.createElement("button"); btn.type = "button"; btn.id = "res-" + key;
+        btn.className = "res" + (val ? " " + val : "");
+        btn.textContent = m[1] + ": " + RES_TEXT[val];
+        btn.disabled = !canWrite() || !!pending[key];
+        btn.setAttribute("aria-label", x.id + ", " + m[2] + ": " + RES_TEXT[val] + ". Tap to change.");
+        btn.addEventListener("click", function () { cycle(key); });
+        resbox.appendChild(btn);
+      });
+      row.appendChild(num); row.appendChild(chipRow(x.code)); row.appendChild(what); row.appendChild(resbox);
+      box.appendChild(row);
+    });
+    el("score").innerHTML = MODELS.map(function (m) {
+      var t = tally[m[0]];
+      return "<span>" + m[1] + ": normal <b>" + t[0] + "/" + t[1] + "</b> · varied <b>" + t[2] + "/" + t[3] + "</b></span>";
+    }).join("");
+  }
+
+  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(exam)); } catch (e) {} }
+  function loadLocal() { try { exam = JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}") || {}; } catch (e) { exam = {}; } }
+
+  function cycle(key) {
+    if (!canWrite() || pending[key]) return;
+    var before = exam[key] || "", after = before === "" ? "pass" : (before === "pass" ? "fail" : "");
+    if (after) exam[key] = after; else delete exam[key];
+    if (mode === "local") { saveLocal(); render(); return; }
+    pending[key] = true; render();
+    var ref = col.doc(key);
+    var write = after ? ref.set({ result: after, at: new Date().toISOString() }) : ref["delete"]();
+    write.then(function () { delete pending[key]; setStatus("Saved. Everyone who opens this page sees the same results."); render(); },
+      function (err) {
+        delete pending[key]; if (before) exam[key] = before; else delete exam[key];
+        var code = err && err.code;
+        if (code === "invalid_argument" || code === "not_granted" || code === "revoked") {
+          mode = "readonly"; setStatus("You can see this page but not change it. Ask the owner to share it with you as a contributor.", "bad");
+        } else {
+          setStatus(key + " was not saved (connection problem). Try again.", "bad");
+        }
+        render();
+      });
+  }
+
+  render();
+
+  function startLocal() {
+    mode = "local"; loadLocal();
+    setStatus("Shared saving is not available in this view. Results are kept in this browser only.", "warn");
+    render();
+  }
+
+  var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("db") : Promise.resolve(null);
+  use.then(function (db) {
+    if (!db) { startLocal(); return; }
+    col = db.collection("groups80-exam");
+    var slow = setTimeout(function () { if (mode === "loading") setStatus("The saved results cannot be reached yet. Still trying…", "warn"); }, 10000);
+    col.onSnapshot(function (snap) {
+      var fresh = {};
+      snap.docs.forEach(function (d) {
+        var body = d.exists ? d.data() : null;
+        if (body && (body.result === "pass" || body.result === "fail")) fresh[String(d.id)] = body.result;
+      });
+      for (var k in pending) { if (exam[k]) fresh[k] = exam[k]; else delete fresh[k]; }
+      exam = fresh;
+      if (mode === "loading") { clearTimeout(slow); mode = "shared"; setStatus("Exam results are saved in this page for everyone who opens it."); }
+      render();
+    }, function () {
+      clearTimeout(slow);
+      if (mode === "loading") { startLocal(); return; }
+      mode = "readonly"; setStatus("Lost the connection to the saved results. Reload the page to continue.", "bad"); render();
+    });
+  }, function () { startLocal(); });
+})();
+</script>

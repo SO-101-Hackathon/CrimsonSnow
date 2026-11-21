@@ -486,6 +486,129 @@ def cmd_rollout(args, cfg, state):
     return code
 
 
+def _camera_devices() -> list[str]:
+    """Windows: video device names in DirectShow order (= the camera numbers OpenCV uses)."""
+    import re
+    import shutil
+    import subprocess
+
+    ffmpeg = shutil.which("ffmpeg")
+    if not R.IS_WINDOWS or not ffmpeg:
+        return []
+    try:
+        res = subprocess.run([ffmpeg, "-hide_banner", "-f", "dshow", "-list_devices", "true", "-i", "dummy"],
+                             capture_output=True, text=True, errors="replace", timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return re.findall(r'"([^"]+)" \(video\)', res.stderr)
+
+
+def _ascii(text: str) -> str:
+    return text.encode("ascii", "replace").decode().replace("?", "-")
+
+
+def cmd_demo(args, cfg, state):
+    """Demo mode with automatic retries (sokit/demo.py): run, check, run again if the battery is still there."""
+    from . import demo as D
+    from . import sensecraft as SC
+
+    if not args.dry_run and SC.is_running():
+        raise SystemExit("[so] SenseCraft is running and holds the arms and the cameras. Close it "
+                         "(also from the system tray), then run `so demo` again.")
+    calibration = None
+    task = args.task or cfg["task"]["description"]
+    if args.sensecraft is not None:
+        model = SC.pick_model(args.sensecraft or None)
+        task = args.task or model.task or task  # the policy sees the text its recordings carried
+        path, label = str(model.path), _ascii(f"sensecraft:{model.name}")
+        calibration = SC.follower_calibration()
+        if calibration is None:
+            raise SystemExit("[so] SenseCraft's follower calibration was not found (expected one file in "
+                             "<SenseCraft storage>/calibration/lerobot/robots/so_follower).")
+        print(f"[so] SenseCraft model: {_ascii(model.name)} ({model.steps} steps, {model.updated[:16]})")
+        print(f"[so] Arm calibration: SenseCraft's '{calibration.robot_id}', the one its recordings were made with")
+    else:
+        path, label = _policy_path(args, state)
+
+    our_cams = list(cfg["cameras"])
+    policy_cams = D.policy_cameras(path)
+    if calibration is None and D.trained_on_sensecraft_data(policy_cams):
+        # Recorded in SenseCraft, trained elsewhere (e.g. overnight on this laptop): the joint angles
+        # in those recordings were measured with SenseCraft's calibration, so drive the arm with it.
+        calibration = SC.follower_calibration()
+        if calibration is None:
+            raise SystemExit("[so] This policy was trained on SenseCraft recordings (cameras front/gripper), "
+                             "but SenseCraft's follower calibration was not found on this computer.")
+        print(f"[so] Policy trained on SenseCraft recordings: using SenseCraft's arm calibration '{calibration.robot_id}'")
+    rename = D.camera_rename(policy_cams, our_cams, D.parse_rename(args.rename))
+    roles = {D.camera_role(c): c for c in our_cams}
+
+    flags = ["--strategy.type=base", f"--policy.path={path}"]
+    for flag in _robot_args(cfg, state):
+        if calibration and flag.startswith("--robot.id="):
+            flag = f"--robot.id={calibration.robot_id}"
+        flags.append(flag)
+    if calibration:
+        flags.append(f"--robot.calibration_dir={calibration.folder.as_posix()}")
+    flags += [f"--task={task}", f"--duration={args.seconds:g}",
+              "--interactive=true", "--play_sounds=false"]
+    if rename:
+        flags.append(f"--rename_map={D.rename_map_arg(rename)}")
+    flags += list(cfg["rollout"].get("extra", [])) + args.extra
+
+    manual = getattr(args, "manual", False)
+    if manual:  # `so try`: you judge each run, nothing is checked or retried automatically
+        ours = ["--manual", f"--label={label}"]
+    else:
+        ours = [f"--tries={args.tries}", f"--attempts={args.attempts}", f"--check={args.check}", f"--label={label}"]
+        if args.model:
+            ours.append(f"--model={args.model}")
+    if roles.get("scene"):
+        ours.append(f"--scene-camera={roles['scene']}")
+    if roles.get("wrist"):
+        ours.append(f"--wrist-camera={roles['wrist']}")
+    argv = [sys.executable, "-m", "sokit.demo", *ours, "--", *flags]
+
+    # What we print and journal: no interpreter path, home folder shortened (the journal is public).
+    home = str(Path.home())
+    shown = ["python", "-m", "sokit.demo", *ours, "--", *(f.replace(home, "~").replace(Path.home().as_posix(), "~") for f in flags)]
+
+    devices = _camera_devices()
+    if devices:
+        print("[so] Cameras right now: " + ", ".join(f"{i} = {name}" for i, name in enumerate(devices)))
+        for name, cam in cfg["cameras"].items():
+            i = cam.get("index_or_path")
+            seen = devices[i] if isinstance(i, int) and 0 <= i < len(devices) else "nothing at that number"
+            print(f"[so]   {name} uses camera {i}: {seen}")
+        print("[so] If a name is wrong, fix the numbers in hackathon.local.toml first (see `so cameras`).")
+    print("[so] Start with the arm folded at rest: every run returns to the pose it starts from.")
+    code = R.run(argv, label=f"{'try' if manual else 'demo'} {label}", shown=shown, dry_run=args.dry_run,
+                 keep_awake=True)
+    if not args.dry_run:
+        state["last_policy_label"] = label
+        C.save_state(state)
+    return code
+
+
+def cmd_panel(args, cfg, state):
+    """Local web control panel for the demo (sokit/panel.py): runs so demo / try / teleop for an audience."""
+    from . import panel
+
+    argv = [f"--host={args.host}", f"--port={args.port}"]
+    argv += ["--mock"] if args.mock else []
+    argv += ["--no-browser"] if args.no_browser else []
+    return panel.main(argv)
+
+
+def cmd_vision(args, cfg, state):
+    """Our own camera check (sokit/vision.py): learns from our recordings, runs offline inside `so demo`."""
+    rest = [*args.rest, *args.extra]
+    argv = [sys.executable, "-m", "sokit.vision", args.action, *rest]
+    shown = ["python", "-m", "sokit.vision", args.action, *rest]
+    return R.run(argv, label=f"vision {args.action}", shown=shown, dry_run=args.dry_run,
+                 keep_awake=args.action in ("prepare", "train"))
+
+
 def cmd_eval(args, cfg, state):
     from . import evallog
 
@@ -659,6 +782,53 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--display", action="store_true", help="live Rerun view")
     sp.add_argument("--rtc", action="store_true", help="real-time chunking (use with SmolVLA / pi0)")
     sp.add_argument("--no-push", action="store_true")
+
+    sp = add("demo", cmd_demo, "demo with automatic retries: run the policy, check the result, run again if it failed")
+    sp.add_argument("--sensecraft", nargs="?", const="", metavar="NAME",
+                    help="use a model trained in SenseCraft (newest, or the newest whose name contains NAME) "
+                         "and SenseCraft's arm calibration")
+    sp.add_argument("--run", help="training run folder name (default: last run)")
+    sp.add_argument("--step", help="checkpoint step, e.g. 5000 (default: newest)")
+    sp.add_argument("--policy", help="Hub repo id or path instead of a local run")
+    sp.add_argument("--tries", type=int, default=3, help="policy runs per attempt at most (default 3)")
+    sp.add_argument("--attempts", type=int, default=5, help="attempts in this session, 0 = until q (default 5)")
+    sp.add_argument("--seconds", type=float, default=40, help="time limit per run (default 40; a run normally ends "
+                                                              "earlier, when the arm is back at rest)")
+    sp.add_argument("--check", choices=["auto", "claude", "openai", "local", "grip"], default="auto",
+                    help="auto (default) = RETRY_CHECK from .env when set (local | openai | claude | grip); "
+                         "otherwise Claude if ANTHROPIC_API_KEY is set, else OpenAI if an OpenAI key is set; "
+                         "local = our own vision model (so vision train), offline; grip = the gripper position only")
+    sp.add_argument("--model", help="model for the camera check (default: claude-opus-5-5, gpt-5.5 or "
+                                    "outputs/vision/model/battery_check.pt)")
+    sp.add_argument("--rename", help="map our camera names to the policy's, e.g. top=front,wrist=gripper "
+                                     "(default: matched by role)")
+    sp.add_argument("--task")
+
+    sp = add("try", cmd_demo, "find failure points: run the policy attempt by attempt, you mark each s or f "
+                              "(no automatic checks or retries; logged for `so eval --summary`)")
+    sp.set_defaults(manual=True)
+    sp.add_argument("--sensecraft", nargs="?", const="", metavar="NAME",
+                    help="use a model trained in SenseCraft (newest, or the newest whose name contains NAME) "
+                         "and SenseCraft's arm calibration")
+    sp.add_argument("--run", help="training run folder name (default: last run)")
+    sp.add_argument("--step", help="checkpoint step, e.g. 5000 (default: newest)")
+    sp.add_argument("--policy", help="Hub repo id or path instead of a local run")
+    sp.add_argument("--seconds", type=float, default=40, help="time limit per run (default 40)")
+    sp.add_argument("--rename", help="map our camera names to the policy's, e.g. top=front,wrist=gripper")
+    sp.add_argument("--task")
+
+    sp = add("panel", cmd_panel, "local web control panel for the demo: start attempts, stop the arm, scoreboard, "
+                                 "check photos (opens the browser)")
+    sp.add_argument("--host", default="127.0.0.1",
+                    help="127.0.0.1 = this computer only (default); 0.0.0.0 = also devices on the local network")
+    sp.add_argument("--port", type=int, default=8765)
+    sp.add_argument("--mock", action="store_true", help="simulated robot session, for rehearsing without the arm")
+    sp.add_argument("--no-browser", action="store_true", help="do not open the browser")
+
+    sp = add("vision", cmd_vision, "our own camera check for `so demo`: prepare frames, train, test, check photos")
+    sp.add_argument("action", choices=["prepare", "train", "test", "check"])
+    sp.add_argument("rest", nargs=argparse.REMAINDER,
+                    help="options of that step (see: python -m sokit.vision <step> --help)")
 
     sp = add("eval", cmd_eval, "log success/fail per attempt; pick the best checkpoint for the demo")
     sp.add_argument("label", nargs="?", help="checkpoint label (default: the last one rolled out)")

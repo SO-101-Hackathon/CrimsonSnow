@@ -1,0 +1,423 @@
+<title>Battery Fix Recordings</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one recording sheet for the whole session. The seven-step order on top, the next recording
+   large with the live straight share, then all 132 grouped by setup, and what to train afterwards. */
+:root {
+  --bg: #f1f5f2; --surface: #ffffff; --ink: #14201b; --muted: #55645d; --rule: #d3dcd6; --soft: #e6ede9;
+  --stick: #b08550; --tnt: #d6336c; --duck: #f2c200; --car: #2f6fde;
+  --on-dark: #ffffff; --on-light: #1c1a05; --go: #1c6a53; --warn-bg: #fbf2dd; --warn-rule: #d9b45a; --bad: #b3261e;
+  --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+    --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff;
+    --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+  --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff;
+  --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 52rem; margin: 0 auto; padding-block: 1.5rem 4rem; display: flex; flex-direction: column; gap: 1.6rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 700; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+p { margin: 0; max-width: 66ch; }
+section { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 1.2rem; border-bottom: 2px solid var(--ink); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--car); outline-offset: 2px; }
+a { color: var(--car); }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--soft); padding: 0.05rem 0.3rem; border-radius: 3px; overflow-wrap: anywhere; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+ol.order { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.4rem; }
+ol.order li { counter-increment: s; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.5rem 0.4rem;
+  display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; font-family: var(--display); font-weight: 700; font-size: 1rem; line-height: 1.1; }
+ol.order li::before { content: counter(s); font-family: var(--mono); font-weight: 500; font-size: 0.74rem; color: var(--muted); }
+ol.order li.var { background: var(--warn-bg); border-color: var(--warn-rule); }
+@media (max-width: 40rem) { ol.order { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.status { font-family: var(--mono); font-size: 0.84rem; padding: 0.5rem 0.75rem; border-radius: 4px; background: var(--soft); color: var(--muted); }
+.status.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-rule); color: var(--ink); }
+.status.bad { background: var(--warn-bg); border-left: 4px solid var(--bad); color: var(--ink); }
+.progress { display: flex; flex-direction: column; gap: 0.4rem; }
+.bar { height: 0.7rem; background: var(--soft); border-radius: 99px; overflow: hidden; border: 1px solid var(--rule); }
+.bar > i { display: block; height: 100%; width: 0; background: var(--go); }
+.counts { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-family: var(--mono); font-size: 0.86rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.counts b { color: var(--ink); font-weight: 500; }
+.share { font-family: var(--mono); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.share b { font-weight: 500; }
+
+.next { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.next-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.9rem; }
+.next-head .num { font-family: var(--display); font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.change { font-family: var(--display); font-size: clamp(1.15rem, 4.4vw, 1.5rem); font-weight: 700; line-height: 1.15; }
+.stickline { font-family: var(--display); font-size: clamp(1.3rem, 5vw, 1.8rem); font-weight: 700; line-height: 1.1;
+  background: var(--warn-bg); border-left: 4px solid var(--stick); padding: 0.5rem 0.75rem; border-radius: 0 4px 4px 0; }
+.stickline.plain { background: transparent; border-left: 0; padding: 0; font-size: 1.15rem; font-weight: 600; }
+.places { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }
+.place { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.slot { height: 6.5rem; border-radius: 5px; background: var(--soft); display: grid; place-items: center; overflow: hidden; }
+.place small { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: center; }
+.place.moved small { color: var(--ink); font-weight: 500; }
+.place.moved .slot { outline: 3px solid var(--ink); outline-offset: 2px; }
+.obj { border-radius: 5px; display: grid; place-items: center; text-align: center; font-family: var(--display); font-weight: 700;
+  font-size: clamp(0.85rem, 3.4vw, 1.1rem); width: 78%; height: 62%; padding: 0.2rem; overflow-wrap: anywhere; }
+.obj.D { background: var(--duck); color: var(--on-light); } .obj.C { background: var(--car); color: var(--on-dark); }
+.obj.T { background: var(--tnt); color: var(--on-dark); }
+.obj.B { background: var(--stick); color: var(--on-light); width: 30%; height: 76%; font-family: var(--mono); font-size: 0.95rem;
+  grid-template-rows: 1fr 1fr; line-height: 1; transition: transform 0.2s; }
+@media (prefers-reduced-motion: reduce) { .obj.B { transition: none; } }
+.actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.btn-go { background: var(--go); color: var(--on-dark); border: 0; border-radius: 5px; padding: 0.75rem 1.4rem; font-family: var(--display); font-size: 1.25rem; font-weight: 700; }
+.btn-go:disabled { opacity: 0.45; cursor: default; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.88rem; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 0.4rem; align-items: center; }
+.chip { width: 1.6rem; height: 1.6rem; border-radius: 3px; display: inline-grid; place-items: center; font: 500 0.78rem var(--mono); flex: none; }
+.chip.B { background: var(--stick); color: var(--on-light); } .chip.D { background: var(--duck); color: var(--on-light); }
+.chip.C { background: var(--car); color: var(--on-dark); } .chip.T { background: var(--tnt); color: var(--on-dark); }
+.chips { display: flex; gap: 4px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.tabs button { font: 500 0.84rem var(--mono); padding: 0.4rem 0.7rem; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 4px; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.listbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.sethead { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; padding: 0.6rem 0.75rem; background: var(--soft);
+  border-bottom: 1px solid var(--rule); font-family: var(--display); font-weight: 700; font-size: 1.05rem; }
+.sethead .hint { font-family: var(--body); font-weight: 400; font-size: 0.86rem; }
+.row { display: grid; grid-template-columns: 2.6rem auto 1fr auto; gap: 0.6rem; align-items: center; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--rule); }
+.row.groupend { border-bottom: 2px solid var(--muted); }
+.listbox > :last-child { border-bottom: 0; }
+.row .n { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.row .what { font-size: 0.92rem; min-width: 0; overflow-wrap: anywhere; }
+.row .what.var { font-weight: 600; }
+.row.done .n, .row.done .what, .row.done .chips { opacity: 0.4; }
+.row.isnext { background: var(--warn-bg); }
+.row input { width: 1.5rem; height: 1.5rem; accent-color: var(--go); }
+@media (max-width: 34rem) { .row { grid-template-columns: 2.3rem 1fr auto; } .row .chips { display: none; } }
+
+ul.rules, ol.after { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; max-width: 68ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Team CrimsonSnow · SO-101 · one session</span>
+    <h1>Battery Fix Recordings</h1>
+    <p>132 recordings in one session: 12 setups recorded seven times each, with single straight recordings in between. At the end there are 12 of each change (turned left and right 20°, moved up and down 2 cm) and, with the 108 old episodes, exactly 80 % straight. If you stop early, it never drops below 79.4 %.</p>
+  </header>
+
+  <section aria-labelledby="h-order">
+    <h2 id="h-order">Every setup, in this order</h2>
+    <ol class="order">
+      <li>Straight</li>
+      <li class="var">Turned left 20°</li>
+      <li class="var">Turned right 20°</li>
+      <li>Straight</li>
+      <li class="var">Up 2 cm</li>
+      <li class="var">Down 2 cm</li>
+      <li>Straight</li>
+    </ol>
+    <p class="hint">Between setups come single straight recordings with one swap each. Up is away from the arm, down is toward it; left and right are as the operator sees them from behind the arm.</p>
+  </section>
+
+  <section aria-labelledby="h-next">
+    <h2 id="h-next">Record next</h2>
+    <div id="status" class="status" role="status" aria-live="polite">Loading saved ticks…</div>
+    <div class="progress" aria-label="Progress">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="counts" id="counts"></div>
+      <div class="share" id="share"></div>
+    </div>
+    <div class="next">
+      <div class="next-head">
+        <span class="eyebrow">Episode</span>
+        <span class="num" id="next-num">1</span>
+        <span class="hint" id="next-where"></span>
+      </div>
+      <div class="change" id="next-change"></div>
+      <div class="places" id="next-places"></div>
+      <div class="stickline" id="next-stick"></div>
+      <div class="actions">
+        <button type="button" class="btn-go" id="next-done" disabled>Recorded</button>
+        <span class="hint">Places 1 to 4 from left to right as the operator sees them.</span>
+      </div>
+    </div>
+    <div class="legend" aria-label="Legend">
+      <span><i class="chip B">B</i>battery stick, the one to pick</span><span><i class="chip D">D</i>yellow duck</span><span><i class="chip C">C</i>blue car</span><span><i class="chip T">T</i>pink TNT</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-each">
+    <h2 id="h-each">Every recording</h2>
+    <ul class="rules">
+      <li>Start at rest, come down from straight above, close on the middle of the stick, lift, drop low over the box, back to rest.</li>
+      <li>For a turned stick, turn the wrist to line up with the stick before closing.</li>
+      <li>The same person drives the leader arm for all 132. The cameras, box, mat and light stay as they are.</li>
+      <li>A fumbled grab: redo it before ticking.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-all">
+    <h2 id="h-all">All 132</h2>
+    <div class="tabs" id="tabs"></div>
+    <div class="listbox" id="list"></div>
+  </section>
+
+  <section aria-labelledby="h-after">
+    <h2 id="h-after">When all 132 are ticked</h2>
+    <ol class="after">
+      <li>Watch five of the new episodes in SenseCraft and delete any with a fumbled grab.</li>
+      <li>Merge them with <code>battery sample</code>: 108 + 132 = 240 episodes, 80 % straight. Name it <code>battery v2</code>.</li>
+      <li>Train ACT on <code>battery v2</code> for about 89,000 steps (more data needs more steps: 40,000 was right for 108 episodes).</li>
+      <li>Run the exam on the <a href="https://claude.ai/artifact/F8bUacwpXXh5mXoWrx7FSF" target="_blank" rel="noopener">Battery Fix Plan</a> and demo with the model that does best on the normal cases.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function () {
+  // 60 arrangements along the cycle of the 24 (two neighbouring objects swap from one to the next).
+  // At 12 of them a setup is recorded seven times; at the other 48 one straight recording.
+  // Setups: 3 per place. Single straight: 12 per place. Total 84 straight + 12 of each change.
+  var PERMS = "DCTB DCBT DBCT BDCT BDTC DBTC DTBC DTCB TDCB TDBC TBDC BTDC BTCD TBCD TCBD TCDB CTDB CTBD CBTD BCTD BCDT CBDT CDBT CDTB".split(" ");
+  var SETUP_SLOTS = [0, 4, 9, 13, 18, 23, 28, 33, 38, 43, 48, 53];
+  var NAME = { B: "Stick", D: "Duck", C: "Car", T: "TNT" };
+  var FULL = { B: "battery stick", D: "yellow duck", C: "blue car", T: "pink TNT" };
+  var THE = { B: "the stick", D: "the duck", C: "the car", T: "the TNT" };
+  var GROUP = [[0, null], [-20, null], [20, null], [0, null], [0, "up"], [0, "down"], [0, null]];
+  var SHIFT_TEXT = { up: "moved up 2 cm (away from the arm)", down: "moved down 2 cm (toward the arm)" };
+  var SHIFT_SHORT = { up: "moved up 2 cm", down: "moved down 2 cm" };
+  var SHIFT_MOVE = { up: "translateY(-0.9rem)", down: "translateY(0.9rem)" };
+  var OLD = 108;
+
+  var EP = [], n = 1, setupNo = 0;
+  for (var j = 0; j < 60; j++) {
+    var code = PERMS[j % PERMS.length], place = code.indexOf("B");
+    if (SETUP_SLOTS.indexOf(j) >= 0) {
+      setupNo++;
+      for (var i = 0; i < GROUP.length; i++) {
+        var v = GROUP[i];
+        EP.push({ n: n++, kind: "setup", group: setupNo, step: i + 1, normal: !v[0] && !v[1], code: code, place: place, angle: v[0], shift: v[1] });
+      }
+    } else {
+      EP.push({ n: n++, kind: "single", group: null, step: 1, normal: true, code: code, place: place, angle: 0, shift: null });
+    }
+  }
+  var TOTAL = EP.length;
+  // Tabs: setups 1 to 4, 5 to 8, 9 to 12 (each tab starts where its first setup starts).
+  function firstOfSetup(k) { for (var x = 0; x < EP.length; x++) if (EP[x].group === k && EP[x].step === 1) return EP[x].n; return TOTAL + 1; }
+  var TABS = [
+    { id: "1", label: "Setups 1 to 4", from: 1, to: firstOfSetup(5) - 1 },
+    { id: "2", label: "Setups 5 to 8", from: firstOfSetup(5), to: firstOfSetup(9) - 1 },
+    { id: "3", label: "Setups 9 to 12", from: firstOfSetup(9), to: TOTAL }
+  ];
+
+  function angleText(a) { return a ? "turned " + (a < 0 ? "left " : "right ") + Math.abs(a) + "°" : "straight"; }
+  function stickText(e) { return e.shift ? SHIFT_TEXT[e.shift] : angleText(e.angle); }
+  function stickShort(e) { return e.shift ? SHIFT_SHORT[e.shift] : angleText(e.angle); }
+  function stickTransform(e) {
+    var t = [];
+    if (e.shift) t.push(SHIFT_MOVE[e.shift]);
+    if (e.angle) t.push("rotate(" + e.angle + "deg)");
+    return t.join(" ");
+  }
+  function describe(e) {
+    var out = [];
+    for (var p = 0; p < 4; p++) out.push("place " + (p + 1) + " " + FULL[e.code.charAt(p)]);
+    return out.join(", ") + ". Stick " + stickText(e);
+  }
+  function changeFor(e) {
+    if (!e.normal) return { text: "Same setup. Only change the stick: " + stickText(e) + ".", short: "only the stick", moved: [e.place] };
+    if (e.kind === "setup" && e.step > 1) return { text: "Same setup. Put the stick back straight on its spot.", short: "stick back straight", moved: [e.place] };
+    var all = { text: "Set up all four as shown, the stick straight on its spot.", short: "set up all four", moved: [0, 1, 2, 3] };
+    if (e.n === 1) return all;
+    var prev = EP[e.n - 2].code, moved = [];
+    for (var i = 0; i < 4; i++) if (prev.charAt(i) !== e.code.charAt(i)) moved.push(i);
+    if (moved.length !== 2) return all;
+    var a = prev.charAt(moved[0]), b = prev.charAt(moved[1]);
+    return { text: "Swap " + THE[a] + " and " + THE[b] + " (places " + (moved[0] + 1) + " and " + (moved[1] + 1) + "), and put the stick straight on its spot.",
+             short: "swap " + NAME[a] + " and " + NAME[b], moved: moved };
+  }
+  function docId(k) { return "r" + ("00" + k).slice(-3); }
+
+  var done = {}, pending = {}, mode = "loading", col = null, tab = "1";
+  var LOCAL_KEY = "battery-fix-recordings";
+  var el = function (id) { return document.getElementById(id); };
+  function canWrite() { return mode === "shared" || mode === "local"; }
+  function setStatus(text, kind) { var st = el("status"); st.textContent = text; st.className = "status" + (kind ? " " + kind : ""); }
+  function nextEpisode() { for (var k = 1; k <= TOTAL; k++) if (!done[k]) return k; return 0; }
+
+  function chipRow(code) {
+    var chips = document.createElement("span"); chips.className = "chips";
+    for (var p = 0; p < 4; p++) {
+      var c = code.charAt(p), chip = document.createElement("i");
+      chip.className = "chip " + c; chip.textContent = c; chip.title = "Place " + (p + 1) + ": " + FULL[c];
+      chips.appendChild(chip);
+    }
+    return chips;
+  }
+
+  function renderProgress() {
+    var total = 0, kinds = [0, 0, 0, 0, 0];
+    EP.forEach(function (e) {
+      if (!done[e.n]) return;
+      total++;
+      kinds[e.shift === "up" ? 3 : e.shift === "down" ? 4 : e.angle < 0 ? 1 : e.angle > 0 ? 2 : 0]++;
+    });
+    el("bar").style.width = (100 * total / TOTAL) + "%";
+    var labels = [["straight", 84], ["turned left", 12], ["turned right", 12], ["up", 12], ["down", 12]];
+    el("counts").innerHTML = "<span><b>" + total + "</b> of " + TOTAL + " recorded</span>" +
+      labels.map(function (l, i) { return "<span>" + l[0] + " <b>" + kinds[i] + "</b>/" + l[1] + "</span>"; }).join("");
+    var share = 100 * (OLD + kinds[0]) / (OLD + total);
+    el("share").innerHTML = "Straight share with the 108 old episodes, right now: <b>" + share.toFixed(1) + " %</b> (80.0 % when all 132 are done)";
+  }
+
+  function renderNext() {
+    var k = nextEpisode(), places = el("next-places");
+    places.textContent = "";
+    if (!k) {
+      el("next-num").textContent = "Done"; el("next-where").textContent = "All 132 are recorded. Merge, then train.";
+      el("next-change").textContent = ""; el("next-stick").textContent = ""; el("next-done").disabled = true; return;
+    }
+    var e = EP[k - 1], ch = changeFor(e);
+    el("next-num").textContent = k;
+    el("next-where").textContent = (e.kind === "setup" ? "Setup " + e.group + ", " + e.step + " of 7" : "Single straight") + " · stick at place " + (e.place + 1);
+    el("next-change").textContent = ch.text;
+    for (var p = 0; p < 4; p++) {
+      var c = e.code.charAt(p), isMoved = ch.moved.length < 4 && ch.moved.indexOf(p) >= 0;
+      var box = document.createElement("div"); box.className = "place" + (isMoved ? " moved" : "");
+      var slot = document.createElement("div"); slot.className = "slot";
+      var obj = document.createElement("div"); obj.className = "obj " + c;
+      if (c === "B") { obj.innerHTML = "<span>−</span><span>+</span>"; obj.style.transform = stickTransform(e); }
+      else obj.textContent = NAME[c];
+      slot.appendChild(obj);
+      var lab = document.createElement("small"); lab.textContent = "place " + (p + 1) + (isMoved ? " · moved" : "");
+      box.appendChild(slot); box.appendChild(lab); places.appendChild(box);
+    }
+    places.setAttribute("role", "img"); places.setAttribute("aria-label", "Episode " + k + ": " + describe(e));
+    var stick = el("next-stick");
+    stick.textContent = "Stick: " + stickText(e);
+    stick.className = "stickline" + (e.normal ? " plain" : "");
+    el("next-done").disabled = !canWrite() || !!pending[k];
+    el("next-done").textContent = "Recorded episode " + k;
+  }
+
+  function renderTabs() {
+    var tabs = el("tabs"); tabs.textContent = "";
+    TABS.forEach(function (t) {
+      var btn = document.createElement("button"); btn.type = "button"; btn.id = "tab-" + t.id;
+      btn.textContent = t.label + " · " + t.from + " to " + t.to;
+      btn.setAttribute("aria-pressed", t.id === tab ? "true" : "false");
+      btn.addEventListener("click", function () { tab = t.id; renderTabs(); renderList(); });
+      tabs.appendChild(btn);
+    });
+  }
+
+  function renderList() {
+    var t = TABS.filter(function (x) { return x.id === tab; })[0], list = el("list"), next = nextEpisode();
+    list.textContent = "";
+    EP.forEach(function (e) {
+      if (e.n < t.from || e.n > t.to) return;
+      if (e.kind === "setup" && e.step === 1) {
+        var head = document.createElement("div"); head.className = "sethead";
+        var title = document.createElement("span"); title.textContent = "Setup " + e.group + " · stick at place " + (e.place + 1);
+        var chips = chipRow(e.code); chips.setAttribute("role", "img"); chips.setAttribute("aria-label", describe(e).split(". Stick")[0]);
+        var how = document.createElement("span"); how.className = "hint"; how.textContent = changeFor(e).text;
+        head.appendChild(title); head.appendChild(chips); head.appendChild(how);
+        list.appendChild(head);
+      }
+      var row = document.createElement("label");
+      row.className = "row" + (done[e.n] ? " done" : "") + (e.n === next ? " isnext" : "") + (e.kind === "setup" && e.step === GROUP.length ? " groupend" : "");
+      row.setAttribute("for", "ep-" + e.n);
+      var num = document.createElement("span"); num.className = "n"; num.textContent = e.n;
+      var chipsCell = chipRow(e.code); chipsCell.setAttribute("aria-hidden", "true");
+      var what = document.createElement("span"); what.className = "what" + (e.normal ? "" : " var");
+      what.textContent = e.kind === "setup" ? e.step + ". Stick " + stickShort(e) : "Single · " + changeFor(e).short + " · stick straight";
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "ep-" + e.n; cb.checked = !!done[e.n];
+      cb.disabled = !canWrite() || !!pending[e.n]; cb.setAttribute("aria-label", "Episode " + e.n + " recorded");
+      cb.addEventListener("change", function () { toggle(e.n, this.checked); });
+      row.appendChild(num); row.appendChild(chipsCell); row.appendChild(what); row.appendChild(cb);
+      list.appendChild(row);
+    });
+  }
+
+  function renderAll() { renderProgress(); renderNext(); renderList(); }
+
+  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(Object.keys(done))); } catch (e) {} }
+  function loadLocal() { try { (JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]") || []).forEach(function (k) { done[parseInt(k, 10)] = true; }); } catch (e) {} }
+
+  function toggle(k, value) {
+    if (!canWrite() || pending[k]) { renderAll(); return; }
+    if (value) done[k] = true; else delete done[k];
+    if (mode === "local") { saveLocal(); renderAll(); return; }
+    pending[k] = true; renderAll(); setStatus("Saving episode " + k + "…");
+    var ref = col.doc(docId(k));
+    var write = value ? ref.set({ done: true, episode: k, at: new Date().toISOString() }) : ref["delete"]();
+    write.then(function () { delete pending[k]; setStatus("Saved. Everyone who opens this page sees the same ticks."); renderAll(); },
+      function (err) {
+        delete pending[k]; if (value) delete done[k]; else done[k] = true;
+        var code = err && err.code;
+        if (code === "invalid_argument" || code === "not_granted" || code === "revoked") {
+          mode = "readonly"; setStatus("You can see this page but not tick. Ask the owner to share it with you as a contributor.", "bad");
+        } else if (code === "quota_exceeded") {
+          setStatus("Episode " + k + " was not saved: the page's storage is full.", "bad");
+        } else {
+          setStatus("Episode " + k + " was not saved (connection problem). Tick it again.", "bad");
+        }
+        renderAll();
+      });
+  }
+
+  function followNext() {
+    var k = nextEpisode();
+    if (!k) return;
+    TABS.forEach(function (t) { if (k >= t.from && k <= t.to) tab = t.id; });
+    renderTabs();
+  }
+
+  el("next-done").addEventListener("click", function () { var k = nextEpisode(); if (k) toggle(k, true); });
+  renderTabs();
+  renderAll();
+
+  function startLocal() {
+    mode = "local"; loadLocal(); followNext();
+    setStatus("Shared saving is not available in this view. Ticks are kept in this browser only.", "warn");
+    renderAll();
+  }
+
+  var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("db") : Promise.resolve(null);
+  use.then(function (db) {
+    if (!db) { startLocal(); return; }
+    col = db.collection("recordings132");
+    var slow = setTimeout(function () { if (mode === "loading") setStatus("The saved ticks cannot be reached yet. Still trying…", "warn"); }, 10000);
+    col.onSnapshot(function (snap) {
+      var fresh = {};
+      snap.docs.forEach(function (d) {
+        var k = parseInt(String(d.id).slice(1), 10), body = d.exists ? d.data() : null;
+        if (k >= 1 && k <= TOTAL && body && body.done === true) fresh[k] = true;
+      });
+      for (var p in pending) { if (done[p]) fresh[p] = true; else delete fresh[p]; }
+      done = fresh;
+      if (mode === "loading") { clearTimeout(slow); mode = "shared"; followNext(); setStatus("Ticks are saved in this page for everyone who opens it."); }
+      renderAll();
+    }, function () {
+      clearTimeout(slow);
+      if (mode === "loading") { startLocal(); return; }
+      mode = "readonly"; setStatus("Lost the connection to the saved ticks. Reload the page to continue.", "bad"); renderAll();
+    });
+  }, function () { startLocal(); });
+})();
+</script>

@@ -127,6 +127,63 @@ Everything else must be identical on every computer and in both configurations: 
 - **Staying awake.** During recording and training `so` blocks idle sleep with the system's own tool:
   `SetThreadExecutionState` on Windows, `caffeinate` on macOS, `systemd-inhibit` on Linux.
 
+## Optional: demo with automatic retries
+
+`so demo` runs the trained policy, checks whether the battery reached the box and, if not, runs the
+policy again from the start pose (up to three runs per attempt). The check uses the gripper's own
+position, plus a vision model looking at the overhead camera when an API key is set: Claude
+(`claude-opus-5-5`) with an Anthropic key, otherwise `gpt-5.5` with an OpenAI key. Without a key it
+still works, on the gripper position alone.
+
+```bash
+pip install anthropic openai             # inside the lerobot environment, any operating system
+```
+
+Put the key in `.env` at the top of the repository (copy `.env.example`). `.env` is git-ignored, so the
+key never reaches GitHub. An environment variable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) works too and
+wins over the file. Never paste a key into a chat, an issue or the journal.
+
+Policies trained in **SenseCraft Robotics** (Seeed's desktop app, Windows) use SenseCraft's own arm
+calibration and camera names (`front`, `gripper`). `so demo --sensecraft` finds SenseCraft's newest
+model, drives the arm with SenseCraft's calibration file and maps our `top`/`wrist` cameras onto
+`front`/`gripper`. Close SenseCraft first: it keeps the arms' ports and the cameras open.
+
+### Our own camera check (no API key, no internet)
+
+Instead of Claude or OpenAI, `so demo` can ask a small vision model we train ourselves from our
+recordings (`sokit/vision.py`). It needs nothing beyond the `lerobot` environment (torch, torchvision,
+PyAV), about 1 GB of disk for the copied videos and frames, and a few minutes of GPU (CUDA or Apple MPS;
+the CPU works too, slowly).
+
+```bash
+so vision prepare     # copies the overhead-camera videos of a dataset and cuts 16 labelled frames per episode
+so vision train       # fine-tunes ResNet-18 (ImageNet weights) -> outputs/vision/model/battery_check.pt
+so vision test        # accuracy on episodes it never saw (+ labelled real photos) -> journal/vision-report.md
+so vision check outputs/demo/<session>/attempt01_run1_top.jpg
+```
+
+`so vision prepare` takes SenseCraft's biggest dataset by default (read only: it copies the files first,
+so SenseCraft can keep working). Elsewhere, point it at a LeRobot dataset: `--dataset <folder>` or
+`--repo-id <user>/<dataset>` (downloads only the overhead camera's videos). The labels come from the
+gripper signal saved with every frame, so nobody has to label pictures by hand.
+
+### Choosing the check in `.env`
+
+`RETRY_CHECK` in `.env` (template: `.env.example`) picks the check `so demo` uses when no `--check` is
+given: `local` (our model, also accepted: `opencv`), `openai` (also `chatgpt`), `claude`, `grip` (gripper
+position only) or `auto` (Claude, else OpenAI, else gripper; the behaviour before this setting existed).
+`LOCAL_CHECK_MODEL`, `OPENAI_CHECK_MODEL` and `CLAUDE_CHECK_MODEL` change the model of each check.
+
+## Optional: control panel for the demo
+
+`so panel` starts a small web server (Python standard library only, nothing to install) and opens
+http://127.0.0.1:8765. It runs `so demo`, `so try`, `so teleop`, `so cameras` and `so doctor` as one
+background process and drives them with buttons. Options: `--port`, `--no-browser`, `--mock` (simulated
+sessions, no robot and no cameras) and `--host 0.0.0.0` (also reachable from the local network, e.g. a
+phone; the printed link carries the access token). While SenseCraft runs, robot commands and the camera
+preview are refused. The camera preview stays off until switched on, and the cameras are released before
+any robot command starts.
+
 ## Check an installation without a robot
 
 ```bash

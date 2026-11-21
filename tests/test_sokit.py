@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from sokit import cloud, config, ports, runner  # noqa: E402
+from sokit import cloud, config, demo, ports, runner, sensecraft  # noqa: E402
 
 
 class CommandFormatting(unittest.TestCase):
@@ -176,14 +176,33 @@ class CloudConfig(unittest.TestCase):
 
 
 class RecordingList(unittest.TestCase):
-    def test_every_arrangement_is_listed_once(self):
+    """Four objects on four places: 24 arrangements, ordered so each episode is one swap of neighbours."""
+
+    def setUp(self):
         with open(ROOT / "docs" / "strategy" / "recording-list.csv", newline="", encoding="utf-8") as f:
-            rows = list(csv.DictReader(f))
-        self.assertEqual(len(rows), 130)
-        main = [tuple(r[f"place_{i}"] for i in range(1, 6)) for r in rows[:120]]
-        self.assertEqual(len(set(main)), 120)
-        for arrangement in main:
-            self.assertEqual(sorted(arrangement), ["battery", "cap", "cardboard", "cork", "empty"])
+            self.rows = list(csv.DictReader(f))
+        self.places = [tuple(r[f"place_{i}"] for i in range(1, 5)) for r in self.rows]
+
+    def test_two_hundred_episodes_and_balanced_tnt_places(self):
+        self.assertEqual(len(self.rows), 200)
+        per_place = [sum(1 for r in self.rows if r["tnt_place"] == str(p)) for p in range(1, 5)]
+        self.assertEqual(per_place, [50, 50, 50, 50])
+
+    def test_every_arrangement_is_recorded(self):
+        full = [p for p in self.places if "empty" not in p]
+        self.assertEqual(len(set(full)), 24)
+        for arrangement in full:
+            self.assertEqual(sorted(arrangement), ["car", "duck", "green cube", "tnt"])
+        for alone in (p for p in self.places if "empty" in p):
+            self.assertEqual(sorted(alone), ["empty", "empty", "empty", "tnt"])
+
+    def test_one_swap_of_neighbours_between_episodes(self):
+        for before, after in zip(self.places, self.places[1:]):
+            if "empty" in before or "empty" in after:
+                continue
+            changed = [i for i in range(4) if before[i] != after[i]]
+            self.assertEqual(len(changed), 2, (before, after))
+            self.assertEqual(changed[1] - changed[0], 1, (before, after))
 
 
 class TwoConfigurationsAgree(unittest.TestCase):
@@ -228,6 +247,146 @@ class ShellScripts(unittest.TestCase):
 
 
 @unittest.skipUnless(shutil.which("lerobot-train"), "LeRobot is not installed in this environment")
+def _ramp(start: float, end: float, t0: float, seconds: float, hz: int = 30) -> list[tuple[float, float]]:
+    n = max(int(seconds * hz), 1)
+    return [(t0 + i / hz, start + (end - start) * i / n) for i in range(n + 1)]
+
+
+class DemoRetries(unittest.TestCase):
+    """The decisions `so demo` takes between runs: grab or miss, run over, retry or not."""
+
+    def test_holding_the_battery_is_seen(self):
+        # rest -> open to 60 -> close until the battery stops the jaws at 30 -> hold -> open over the box
+        samples = (_ramp(1.6, 60, 0, 1) + _ramp(60, 60, 1, 1) + _ramp(60, 30, 2, 0.4)
+                   + _ramp(30, 30.5, 2.4, 1.5) + _ramp(30, 55, 3.9, 0.5))
+        self.assertEqual(demo.grip_verdict(samples), "held")
+
+    def test_closing_on_nothing_is_a_miss(self):
+        samples = _ramp(1.6, 60, 0, 1) + _ramp(60, 1.2, 1, 0.5) + _ramp(1.2, 1.2, 1.5, 2)
+        self.assertEqual(demo.grip_verdict(samples), "missed")
+
+    def test_hovering_with_an_open_gripper_is_not_a_grab(self):
+        samples = _ramp(1.6, 45, 0, 1) + _ramp(45, 45, 1, 3)
+        self.assertNotEqual(demo.grip_verdict(samples), "held")
+
+    def test_second_grab_after_a_miss_counts(self):
+        samples = (_ramp(1.6, 60, 0, 1) + _ramp(60, 1.0, 1, 0.5) + _ramp(1.0, 60, 1.5, 0.7)
+                   + _ramp(60, 25, 2.2, 0.4) + _ramp(25, 25, 2.6, 1))
+        self.assertEqual(demo.grip_verdict(samples), "held")
+
+    def test_gripper_that_never_opens(self):
+        self.assertEqual(demo.grip_verdict(_ramp(1.6, 2.0, 0, 3)), "never_opened")
+        self.assertEqual(demo.grip_verdict([]), "unknown")
+
+    HOME = {"shoulder_lift.pos": -100.0, "elbow_flex.pos": 94.0}
+
+    def feed(self, watch, lift_series):
+        for i, lift in enumerate(lift_series):
+            if watch.feed(i / 30, {"shoulder_lift.pos": lift, "elbow_flex.pos": 94.0}):
+                return i / 30
+        return None
+
+    def test_run_ends_when_the_arm_is_back_and_still(self):
+        out_and_back = [-100] * 15 + [-100 + 2 * i for i in range(35)] + [-30] * 30 + [-30 - 2 * i for i in range(36)] + [-101] * 60
+        ended = self.feed(demo.MotionWatch(self.HOME), out_and_back)
+        self.assertIsNotNone(ended)
+        self.assertGreater(ended, (15 + 35 + 30 + 36) / 30)  # only after the return
+
+    def test_pause_while_reaching_does_not_end_the_run(self):
+        reach_and_pause = [-100 + 2 * i for i in range(35)] + [-30] * 120
+        self.assertIsNone(self.feed(demo.MotionWatch(self.HOME), reach_and_pause))
+
+    def test_arm_that_never_moves_does_not_end_the_run(self):
+        self.assertIsNone(self.feed(demo.MotionWatch(self.HOME), [-100] * 150))
+
+    def test_decisions(self):
+        C = demo.Check
+        self.assertEqual(demo.decide(C("held", "in_box"))[:2], (True, False))
+        self.assertEqual(demo.decide(C("missed", "on_mat"))[:2], (False, True))
+        self.assertEqual(demo.decide(C("held", "elsewhere"))[:2], (False, False))  # needs a human
+        self.assertEqual(demo.decide(C("held", None))[:2], (True, False))  # no camera check: grip decides
+        self.assertEqual(demo.decide(C("missed", None))[:2], (False, True))
+
+    def test_sensecraft_camera_names_are_matched_by_role(self):
+        rename = demo.camera_rename(["front", "gripper"], ["top", "wrist"])
+        self.assertEqual(rename, {"observation.images.top": "observation.images.front",
+                                  "observation.images.wrist": "observation.images.gripper"})
+        self.assertEqual(demo.camera_rename(["top", "wrist"], ["top", "wrist"]), {})
+        self.assertTrue(demo.trained_on_sensecraft_data(["gripper", "front"]))  # -> SenseCraft's calibration
+        self.assertFalse(demo.trained_on_sensecraft_data(["top", "wrist"]))
+        self.assertEqual(demo.camera_rename(["cam_a"], ["top"], demo.parse_rename("top=cam_a")),
+                         {"observation.images.top": "observation.images.cam_a"})
+        with self.assertRaises(SystemExit):
+            demo.camera_rename(["cam_a", "cam_b"], ["top", "wrist"])  # no role in the names: must be explicit
+
+    def test_manual_mode_logs_what_you_type(self):
+        import queue
+        import threading
+        from types import SimpleNamespace
+        from unittest import mock
+
+        from sokit import evallog
+
+        session = object.__new__(demo.Demo)  # no robot: only the keyboard loop is exercised
+        session.opts = SimpleNamespace(label="sensecraft:battery test")
+        session.shutdown = threading.Event()
+        session._lines = queue.Queue()
+        for line in ("\n", "s\n", "\n", "f missed grip place 3\n", "\n", "oops\n", "x\n", "q\n"):
+            session._lines.put(line)
+        session._run_policy = lambda: (12.3, "arm back at rest", "missed")
+        log = Path(tempfile.mkdtemp()) / "eval.csv"
+        with mock.patch.object(evallog, "EVAL_CSV", log), mock.patch("builtins.print"):
+            session.manual_loop(read_stdin=False)
+        with open(log, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+        self.assertEqual([r["result"] for r in rows], ["success", "fail"])  # x is not logged
+        self.assertTrue(rows[1]["note"].startswith("missed grip place 3 [12 s, arm back at rest, gripper missed]"))
+
+    def test_keys_are_read_from_dot_env_without_overriding(self):
+        from unittest import mock
+
+        env_file = Path(tempfile.mkdtemp()) / ".env"
+        env_file.write_text('gpt_api_key="sk-test-123"\nSOME_SETTING=from-file\n# comment\n', encoding="utf-8")
+        with mock.patch.dict(os.environ, {"SOME_SETTING": "already-set"}, clear=False):
+            os.environ.pop("OPENAI_API_KEY", None)
+            os.environ.pop("gpt_api_key", None)
+            demo.load_env_file(env_file)
+            self.assertEqual(os.environ["OPENAI_API_KEY"], "sk-test-123")  # gpt_api_key is accepted
+            self.assertEqual(os.environ["SOME_SETTING"], "already-set")    # never overridden
+
+    def test_camera_check_provider(self):
+        from unittest import mock
+
+        with mock.patch.object(demo, "claude_available", return_value=False), \
+             mock.patch.object(demo, "openai_available", return_value=True):
+            self.assertEqual(demo.pick_provider("auto"), "openai")
+            self.assertIsNone(demo.pick_provider("grip"))
+            with self.assertRaises(SystemExit):
+                demo.pick_provider("claude")
+        with mock.patch.object(demo, "claude_available", return_value=False), \
+             mock.patch.object(demo, "openai_available", return_value=False):
+            self.assertIsNone(demo.pick_provider("auto"))  # no key at all: gripper only
+
+    def test_sensecraft_storage_is_found(self):
+        root = Path(tempfile.mkdtemp())
+        calib = root / "calibration" / "lerobot" / "robots" / "so_follower"
+        calib.mkdir(parents=True)
+        (calib / "so100_follower.json").write_text("{}")
+        for name, updated in (("old run", "2026-11-20T10:00"), ("battery final", "2026-11-21T10:00")):
+            model_dir = root / "projects" / "p1" / "models" / name.replace(" ", "_")
+            weights = model_dir / "bundle" / "pretrained_model"
+            weights.mkdir(parents=True)
+            (weights / "config.json").write_text('{"type": "act"}')
+            (model_dir / "state.json").write_text(json.dumps(
+                {"status": "ready", "display_name": name, "updated_at": updated, "steps": 30000,
+                 "load_path": str(weights), "task_text": "battery sample"}))
+        self.assertEqual(sensecraft.follower_calibration(root).robot_id, "so100_follower")
+        self.assertEqual(sensecraft.pick_model(None, root).name, "battery final")
+        self.assertEqual(sensecraft.pick_model("old", root).name, "old run")
+        with self.assertRaises(SystemExit):
+            sensecraft.pick_model("tnt", root)
+
+
 class DryRun(unittest.TestCase):
     """With LeRobot installed: `so` builds the same command on every operating system."""
 

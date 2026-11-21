@@ -49,6 +49,11 @@ training speed) lives in `.so101-state.json` (git-ignored).
 | `sokit/winlinks.py`, `sokit/lr.py` | junction fallback for `checkpoints/last` when symlinks are not permitted |
 | `sokit/push.py` | dataset upload through `LeRobotDataset.push_to_hub` (card + version tag); used by `so push dataset` |
 | `sokit/cloud.py` | HF Jobs submission from Windows: fixes Windows paths in the staged config; used by `so train --cloud` |
+| `sokit/demo.py` | `so demo`: rollout with automatic retries through LeRobot's `RolloutController` (run, return home, check grip + a vision model on the overhead camera, run again); `so try`: same session, the operator marks each run s/f (`journal/eval.csv`); pure helpers are unit-tested |
+| `sokit/sensecraft.py` | finds SenseCraft's trained models and its follower calibration (read only); used by `so demo --sensecraft` |
+| `sokit/vision.py` | `so vision prepare/train/test/check`: our own camera check for `so demo` (`--check local`, or `RETRY_CHECK=local` in `.env`). ResNet-18 fine-tuned on frames labelled automatically from the gripper trace (on the mat / in the gripper / in the box); `prepare` copies the dataset first (SenseCraft's folders are only read); model in `outputs/vision/model/` (git-ignored), report in `journal/vision-report.md` |
+| `sokit/panel.py`, `sokit/panel.html` | `so panel`: local web control panel for the presentation; runs `so demo`/`try`/`teleop`/`cameras`/`doctor` as one child process and drives it through stdin; `--mock` runs a fake robot session for testing |
+| `docs/presentation/` | the 5-minute pitch deck; `build_deck.py` rebuilds it with python-pptx (installed outside the `lerobot` env) |
 | `setup.sh`, `tests/`, `.github/workflows/ci.yml` | setup on Ubuntu/macOS/WSL, robot-free tests, and the CI that runs both on clean machines |
 | `sokit/qa.py`, `plan.py`, `evallog.py`, `camcheck.py`, `calib.py`, `doctor.py` | dataset QA, step planner, eval tally, camera alignment, calibration backup, self-check |
 
@@ -84,8 +89,26 @@ Editable install (`pip install -e . --no-deps`) provides `so.exe`; edits to `sok
   snapshot folder as `policy.pretrained_path` and a backslashed `output_dir`. `so train --cloud` runs through
   `sokit/cloud.py`, which rewrites both (base model back to its Hub id) and adds `--job.timeout=8h`
   (LeRobot's default cap is 2 days). Checked offline only, by building the staged file without submitting.
+- SenseCraft Robotics (Seeed's app, bundles LeRobot 0.6.0) stores its data under the folder named in
+  `%LOCALAPPDATA%\SenseCraft Robotics\data-location.json`. It calibrated the follower itself as
+  `so100_follower` (offsets differ from `crimson_follower` by up to ~75°), records cameras as `front`
+  (overhead) and `gripper` (wrist), uses degrees like LeRobot 0.7.0, and saves trained models in standard
+  LeRobot format. A SenseCraft-trained policy must run with SenseCraft's calibration: `so demo --sensecraft`.
+  SenseCraft keeps COM ports and cameras open while running: close it before any `so` command.
+- API keys for the `so demo` camera check live in the git-ignored `.env` (the team laptop's OpenAI key
+  is named `gpt_api_key`); `sokit.demo.load_env_file` reads it at runtime. Never print, copy or commit it.
+- `so demo` relies on two LeRobot 0.7.0 internals: `RolloutController` (public) and
+  `ThreadSafeRobot._observed_positions` (private, read only, for the gripper/end-of-run detectors).
 - ACT with LeRobot's defaults has 51.6 M parameters (counted; the docs say "~80M"); a checkpoint is
   197 MB of weights + 394 MB of training state.
+- `so vision` (21 Nov 2026): SenseCraft's "battery final dataset" = 257 episodes; 250 labelled from the
+  gripper trace, 4,000 frames; ResNet-18 trained 8 min on the RTX 4060 → 99.8 % on 50 unseen episodes,
+  never a wrong "in the box", 10 ms per photo. `RETRY_CHECK=local` is set in this laptop's `.env`.
+- The five gripper tests in `tests/test_sokit.py` skip unless `lerobot-train` is on PATH (the
+  `skipUnless` decorator sits on the `_ramp` helper): run the suite from an activated env, or put the
+  env's `Scripts` folder on PATH first.
+- Windows PowerShell 5.1 writes `>` / `*>` redirections as UTF-16; for logs other tools read, use
+  `2>&1 | Out-File -Encoding utf8`.
 
 ## Conventions
 
@@ -98,7 +121,7 @@ Editable install (`pip install -e . --no-deps`) provides `so.exe`; edits to `sok
   older LeRobot docs: in 0.7.0, CLIs are `lerobot-*` and deployment uses `lerobot-rollout`, not
   `lerobot-record --policy`.
 - `scripts/*.sh` save datasets as `${HF_USER}/crimson_dataset_YYYYMMDD_HHMMSS`; `so record` saves them as
-  `<user>/battery_YYYYMMDD_HHMMSS`. Rollout datasets must be prefixed `rollout_`.
+  `<user>/tnt_YYYYMMDD_HHMMSS`. Rollout datasets must be prefixed `rollout_`.
 - Commands that move the arms (teleop, record, replay, rollout, calibrate) need a human at the robot.
   Don't run them unattended.
 - A teammate works on Apple Silicon (macOS 15): there, run through `conda run -n lerobot …` or

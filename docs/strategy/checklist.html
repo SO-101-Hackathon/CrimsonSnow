@@ -1,0 +1,403 @@
+<title>TNT Recording Checklist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a work sheet for the recording table. The next arrangement and the one swap that gets you there sit large at the top; the full list follows below. */
+:root {
+  --bg: #f1f5f2; --surface: #ffffff; --ink: #14201b; --muted: #55645d; --rule: #d3dcd6; --soft: #e6ede9;
+  --tnt: #d6336c; --duck: #f2c200; --car: #2f6fde; --cube: #2e9e55;
+  --on-dark: #ffffff; --on-light: #1c1a05; --go: #1c6a53; --warn-bg: #fbf2dd; --warn-rule: #d9b45a; --bad: #b3261e;
+  --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+    --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff; --cube: #51cf7a;
+    --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+  --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff; --cube: #51cf7a;
+  --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 52rem; margin: 0 auto; padding-block: 1.5rem 4rem; display: flex; flex-direction: column; gap: 1.5rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 700; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+p { margin: 0; max-width: 66ch; }
+.eyebrow { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 1.2rem; border-bottom: 2px solid var(--ink); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--car); outline-offset: 2px; }
+
+.status { font-family: var(--mono); font-size: 0.84rem; padding: 0.5rem 0.75rem; border-radius: 4px; background: var(--soft); color: var(--muted); }
+.status.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-rule); color: var(--ink); }
+.status.bad { background: var(--warn-bg); border-left: 4px solid var(--bad); color: var(--ink); }
+
+.progress { display: flex; flex-direction: column; gap: 0.4rem; }
+.bar { height: 0.7rem; background: var(--soft); border-radius: 99px; overflow: hidden; border: 1px solid var(--rule); }
+.bar > i { display: block; height: 100%; width: 0; background: var(--go); }
+.counts { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-family: var(--mono); font-size: 0.86rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.counts b { color: var(--ink); font-weight: 500; }
+
+.next { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.next-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.9rem; }
+.next-head .num { font-family: var(--display); font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.change { font-family: var(--display); font-size: clamp(1.25rem, 4.6vw, 1.7rem); font-weight: 700; line-height: 1.15; }
+.places { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; padding-block: 0.6rem; }
+.place { display: flex; flex-direction: column; gap: 0.3rem; align-items: stretch; min-width: 0; }
+.place small { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: center; }
+.place.moved small { color: var(--ink); font-weight: 500; }
+.tile { border-radius: 5px; min-height: 4rem; display: grid; place-items: center; text-align: center; padding: 0.3rem 0.15rem;
+  font-family: var(--display); font-weight: 700; font-size: clamp(0.95rem, 4vw, 1.35rem); line-height: 1.05; overflow-wrap: anywhere; }
+.T { background: var(--tnt); color: var(--on-dark); } .D { background: var(--duck); color: var(--on-light); }
+.C { background: var(--car); color: var(--on-dark); } .G { background: var(--cube); color: var(--on-dark); }
+.E { background: transparent; border: 2px dashed var(--rule); color: var(--muted); font-weight: 500; }
+.place.moved .tile { outline: 3px solid var(--ink); outline-offset: 3px; }
+.tile.v-L { transform: rotate(-15deg); } .tile.v-R { transform: rotate(15deg); }
+.tile.v-N { transform: translateY(0.55rem); } .tile.v-F { transform: translateY(-0.55rem); }
+.tntpos { font-family: var(--display); font-size: 1.15rem; font-weight: 600; }
+.tntpos.off { background: var(--warn-bg); border-left: 4px solid var(--tnt); padding: 0.45rem 0.7rem; border-radius: 0 4px 4px 0; }
+.next-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.btn-go { background: var(--go); color: var(--on-dark); border: 0; border-radius: 5px; padding: 0.75rem 1.4rem; font-family: var(--display); font-size: 1.25rem; font-weight: 700; }
+.btn-go:disabled { opacity: 0.45; cursor: default; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.88rem; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 0.4rem; align-items: center; }
+.chip { width: 1.6rem; height: 1.6rem; border-radius: 3px; display: inline-grid; place-items: center; font: 500 0.78rem var(--mono); flex: none; }
+.chip.E { border-width: 1px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.tabs button { font: 500 0.84rem var(--mono); padding: 0.4rem 0.7rem; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 4px; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.listbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.row { display: grid; grid-template-columns: 2.6rem auto 1fr auto; gap: 0.6rem; align-items: center; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); }
+.row:last-child { border-bottom: 0; }
+.row .n { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.row .chips { display: flex; gap: 4px; }
+.row .what { font-size: 0.86rem; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.row .what b { color: var(--ink); font-weight: 500; }
+.row.done .n, .row.done .chips, .row.done .what { opacity: 0.4; }
+.row.isnext { background: var(--soft); }
+.row input { width: 1.5rem; height: 1.5rem; accent-color: var(--go); }
+ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; max-width: 66ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Team CrimsonSnow · SO-101 · four places in a line</span>
+    <h1>TNT Recording Checklist</h1>
+    <p>The arm picks up the <strong>pink TNT cube</strong> and drops it in the box. The duck, the car and the green cube are never picked up. From one episode to the next you only swap two neighbouring pieces.</p>
+  </header>
+
+  <div id="status" class="status" role="status" aria-live="polite">Loading saved ticks…</div>
+
+  <div class="progress" aria-label="Progress">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="counts" id="counts"></div>
+  </div>
+
+  <section class="next" aria-labelledby="next-title">
+    <div class="next-head">
+      <span class="eyebrow" id="next-title">Record next</span>
+      <span class="num" id="next-num">1</span>
+      <span class="hint" id="next-round"></span>
+    </div>
+    <div class="change" id="next-change"></div>
+    <div class="places" id="next-places"></div>
+    <div class="tntpos" id="next-var"></div>
+    <div class="next-actions">
+      <button type="button" class="btn-go" id="next-done" disabled>Recorded</button>
+      <span class="hint">Places are numbered 1 to 4 from left to right, as the operator sees them.</span>
+    </div>
+  </section>
+
+  <div class="legend" aria-label="Legend">
+    <span><i class="chip T">T</i>pink TNT cube, the one to pick</span><span><i class="chip D">D</i>yellow duck</span><span><i class="chip C">C</i>blue car</span><span><i class="chip G">G</i>green cube</span>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:0.8rem">
+    <h2>All episodes</h2>
+    <div class="tabs" id="tabs"></div>
+    <div class="listbox" id="list"></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:0.6rem">
+    <h2>Same every time</h2>
+    <ul>
+      <li>All four places are filled, except in round 3, where the TNT is alone.</li>
+      <li>The arm only ever picks up the TNT cube. After the episode, take the TNT out of the box and put it where the next episode says.</li>
+      <li>Put the TNT straight in its place, square to the arm, unless the episode says otherwise.</li>
+      <li>In one episode in four the TNT sits slightly off: turned about 15° left or right, or 1 cm closer or farther. "Left" and "right" are as the operator sees them from behind the arm.</li>
+      <li>The box stays taped where it is. The cameras do not move.</li>
+      <li>Start and end with the arm at rest. Go straight to the TNT, lift, drop it low over the box.</li>
+      <li>If an episode goes wrong, redo it before ticking.</li>
+    </ul>
+    <p class="hint">Four objects on four places can be arranged in 24 ways. One pass goes through all 24 with one swap of two neighbours each time, and the last arrangement is one swap from the first, so the passes run on without a full reset. Rounds 1, 2, 4 and 5 are two passes each. Round 3 is the TNT alone, twice per place. The TNT ends up at each place 50 times.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var PERMS = "DCGT DCTG DTCG TDCG TDGC DTGC DGTC DGCT GDCT GDTC GTDC TGDC TGCD GTCD GCTD GCDT CGDT CGTD CTGD TCGD TCDG CTDG CDTG CDGT".split(" ");
+  var NAME = { T: "TNT", D: "Duck", C: "Car", G: "Cube", "-": "empty" };
+  var FULL = { T: "pink TNT", D: "yellow duck", C: "blue car", G: "green cube", "-": "nothing" };
+  var THE = { T: "the TNT", D: "the duck", C: "the car", G: "the green cube" };
+  var ROUNDS = [
+    { id: 1, label: "Round 1", from: 1, to: 48, note: "all 24 arrangements, twice" },
+    { id: 2, label: "Round 2", from: 49, to: 96, note: "all 24 arrangements, twice" },
+    { id: 3, label: "Round 3", from: 97, to: 104, note: "TNT alone" },
+    { id: 4, label: "Round 4", from: 105, to: 152, note: "all 24 arrangements, twice" },
+    { id: 5, label: "Round 5", from: 153, to: 200, note: "all 24 arrangements, twice" }
+  ];
+  var EP = [];
+  function twoPasses() { for (var t = 0; t < 2; t++) for (var i = 0; i < PERMS.length; i++) EP.push(PERMS[i]); }
+  twoPasses(); twoPasses();
+  for (var k = 0; k < 8; k++) { var s = ["-", "-", "-", "-"]; s[k % 4] = "T"; EP.push(s.join("")); }
+  twoPasses(); twoPasses();
+  var TOTAL = EP.length;
+
+  // How the TNT sits in its place. Three episodes in four it is straight; every fourth one at each
+  // place it is slightly off, so the arm also learns to cope with a cube that was put down carelessly.
+  var CYCLE = ["L", "R", "N", "L", "R", "F"];
+  var VTEXT = { S: "straight", L: "turned left, about 15°", R: "turned right, about 15°",
+                N: "1 cm closer to the arm", F: "1 cm farther from the arm" };
+  var VSHORT = { S: "", L: "TNT turned left", R: "TNT turned right", N: "TNT 1 cm closer", F: "TNT 1 cm farther" };
+  var VAR = [];
+  (function () {
+    var seen = [0, 0, 0, 0];
+    for (var n = 0; n < TOTAL; n++) {
+      var p = EP[n].indexOf("T"), c = seen[p]++;
+      VAR.push(c % 4 === 3 ? CYCLE[(Math.floor(c / 4) + p) % CYCLE.length] : "S");
+    }
+  })();
+
+  // What to change on the table to get from the episode before to this one.
+  function changeFor(n) {
+    var code = EP[n - 1], prev = n > 1 ? EP[n - 2] : null, moved = [];
+    if (code.indexOf("-") >= 0) {
+      return { text: "TNT alone at place " + (code.indexOf("T") + 1) + ". Take the other three off the mat.", short: "TNT alone", moved: [code.indexOf("T")] };
+    }
+    if (!prev || prev.indexOf("-") >= 0) return { text: "Set up all four as shown.", short: "set up all four", moved: [0, 1, 2, 3] };
+    for (var i = 0; i < 4; i++) if (code.charAt(i) !== prev.charAt(i)) moved.push(i);
+    if (moved.length !== 2) return { text: "Set up all four as shown.", short: "set up all four", moved: [0, 1, 2, 3] };
+    var a = prev.charAt(moved[0]), b = prev.charAt(moved[1]);
+    return { text: "Swap " + THE[a] + " and " + THE[b] + " (places " + (moved[0] + 1) + " and " + (moved[1] + 1) + ").",
+             short: "swap " + NAME[a] + " and " + NAME[b], moved: moved };
+  }
+
+  var done = {};          // episode number -> true
+  var pending = {};       // episode number -> write in flight
+  var mode = "loading";   // loading | shared | local | readonly
+  var col = null;
+  var tab = 1;
+  var LOCAL_KEY = "tnt-recording-checklist-4";
+
+  var elStatus = document.getElementById("status");
+  var elBar = document.getElementById("bar");
+  var elCounts = document.getElementById("counts");
+  var elNextNum = document.getElementById("next-num");
+  var elNextRound = document.getElementById("next-round");
+  var elNextChange = document.getElementById("next-change");
+  var elNextPlaces = document.getElementById("next-places");
+  var elNextVar = document.getElementById("next-var");
+  var elNextDone = document.getElementById("next-done");
+  var elTabs = document.getElementById("tabs");
+  var elList = document.getElementById("list");
+
+  function docId(n) { return "e" + ("00" + n).slice(-3); }
+  function roundOf(n) { for (var r = 0; r < ROUNDS.length; r++) if (n >= ROUNDS[r].from && n <= ROUNDS[r].to) return ROUNDS[r]; return ROUNDS[0]; }
+  function nextEpisode() { for (var n = 1; n <= TOTAL; n++) if (!done[n]) return n; return 0; }
+  function describe(code, v) {
+    var out = [];
+    for (var p = 0; p < 4; p++) out.push("place " + (p + 1) + " " + FULL[code.charAt(p)]);
+    return out.join(", ") + ". TNT " + VTEXT[v];
+  }
+
+  function setStatus(text, kind) { elStatus.textContent = text; elStatus.className = "status" + (kind ? " " + kind : ""); }
+  function canWrite() { return mode === "shared" || mode === "local"; }
+
+  function renderProgress() {
+    var n = 0; for (var e = 1; e <= TOTAL; e++) if (done[e]) n++;
+    elBar.style.width = (100 * n / TOTAL) + "%";
+    var html = "<span><b>" + n + "</b> of " + TOTAL + " recorded</span>";
+    ROUNDS.forEach(function (r) {
+      var c = 0; for (var e = r.from; e <= r.to; e++) if (done[e]) c++;
+      html += "<span>" + r.label + " <b>" + c + "</b>/" + (r.to - r.from + 1) + "</span>";
+    });
+    elCounts.innerHTML = html;
+  }
+
+  function renderNext() {
+    var n = nextEpisode();
+    elNextPlaces.textContent = "";
+    if (!n) {
+      elNextNum.textContent = "Done";
+      elNextRound.textContent = "All " + TOTAL + " episodes are ticked.";
+      elNextChange.textContent = "";
+      elNextVar.textContent = ""; elNextVar.className = "tntpos";
+      elNextDone.disabled = true;
+      return;
+    }
+    var code = EP[n - 1], r = roundOf(n), v = VAR[n - 1], ch = changeFor(n);
+    elNextNum.textContent = n;
+    elNextRound.textContent = r.label + " · " + r.note + " · TNT at place " + (code.indexOf("T") + 1);
+    elNextChange.textContent = ch.text;
+    for (var p = 0; p < 4; p++) {
+      var c = code.charAt(p), isMoved = ch.moved.length < 4 && ch.moved.indexOf(p) >= 0;
+      var box = document.createElement("div"); box.className = "place" + (isMoved ? " moved" : "");
+      var tile = document.createElement("div");
+      tile.className = "tile " + (c === "-" ? "E" : c) + (c === "T" && v !== "S" ? " v-" + v : "");
+      tile.textContent = NAME[c];
+      var lab = document.createElement("small"); lab.textContent = "place " + (p + 1) + (isMoved ? " · moved" : "");
+      box.appendChild(tile); box.appendChild(lab); elNextPlaces.appendChild(box);
+    }
+    elNextPlaces.setAttribute("role", "img");
+    elNextPlaces.setAttribute("aria-label", "Episode " + n + ": " + describe(code, v));
+    elNextVar.textContent = "TNT: " + VTEXT[v];
+    elNextVar.className = "tntpos" + (v === "S" ? "" : " off");
+    elNextDone.disabled = !canWrite() || !!pending[n];
+    elNextDone.textContent = "Recorded episode " + n;
+  }
+
+  function renderTabs() {
+    elTabs.textContent = "";
+    ROUNDS.forEach(function (r) {
+      var b = document.createElement("button");
+      b.type = "button"; b.id = "tab-" + r.id;
+      b.textContent = r.label + " · " + r.from + " to " + r.to;
+      b.setAttribute("aria-pressed", r.id === tab ? "true" : "false");
+      b.addEventListener("click", function () { tab = r.id; renderTabs(); renderList(); });
+      elTabs.appendChild(b);
+    });
+  }
+
+  function renderList() {
+    var r = ROUNDS[tab - 1], next = nextEpisode();
+    elList.textContent = "";
+    for (var n = r.from; n <= r.to; n++) {
+      var code = EP[n - 1], v = VAR[n - 1], ch = changeFor(n);
+      var row = document.createElement("label");
+      row.className = "row" + (done[n] ? " done" : "") + (n === next ? " isnext" : "");
+      row.setAttribute("for", "ep-" + n);
+      var num = document.createElement("span"); num.className = "n"; num.textContent = n;
+      var chips = document.createElement("span"); chips.className = "chips";
+      chips.setAttribute("role", "img"); chips.setAttribute("aria-label", describe(code, v));
+      for (var p = 0; p < 4; p++) {
+        var c = code.charAt(p), chip = document.createElement("i");
+        chip.className = "chip " + (c === "-" ? "E" : c);
+        chip.textContent = c === "-" ? "·" : c;
+        chip.title = "Place " + (p + 1) + ": " + FULL[c];
+        chips.appendChild(chip);
+      }
+      var what = document.createElement("span"); what.className = "what";
+      what.textContent = ch.short;
+      if (v !== "S") { var b = document.createElement("b"); b.textContent = " · " + VSHORT[v]; what.appendChild(b); }
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.id = "ep-" + n; cb.checked = !!done[n];
+      cb.disabled = !canWrite() || !!pending[n];
+      cb.setAttribute("aria-label", "Episode " + n + " recorded");
+      (function (n) { cb.addEventListener("change", function () { toggle(n, this.checked); }); })(n);
+      row.appendChild(num); row.appendChild(chips); row.appendChild(what); row.appendChild(cb);
+      elList.appendChild(row);
+    }
+  }
+
+  function renderAll() { renderProgress(); renderNext(); renderList(); }
+
+  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(Object.keys(done))); } catch (e) {} }
+  function loadLocal() {
+    try { (JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]") || []).forEach(function (n) { done[parseInt(n, 10)] = true; }); } catch (e) {}
+  }
+
+  function toggle(n, value) {
+    if (!canWrite() || pending[n]) { renderAll(); return; }
+    if (mode === "local") {
+      if (value) done[n] = true; else delete done[n];
+      saveLocal(); renderAll(); return;
+    }
+    pending[n] = true;
+    if (value) done[n] = true; else delete done[n];
+    renderAll();
+    setStatus("Saving episode " + n + "…");
+    var ref = col.doc(docId(n));
+    var write = value ? ref.set({ done: true, episode: n, at: new Date().toISOString() }) : ref.delete();
+    write.then(function () {
+      delete pending[n];
+      setStatus("Saved. Everyone who opens this page sees the same ticks.");
+      renderAll();
+    }, function (err) {
+      delete pending[n];
+      if (value) delete done[n]; else done[n] = true;
+      var code = err && err.code;
+      if (code === "invalid_argument" || code === "not_granted" || code === "revoked") {
+        mode = "readonly";
+        setStatus("You can see this list but not change it. Ask the owner to share the page with you as a contributor.", "bad");
+      } else if (code === "quota_exceeded") {
+        setStatus("Episode " + n + " was not saved: the page's storage is full.", "bad");
+      } else {
+        setStatus("Episode " + n + " was not saved (connection problem). Tick it again.", "bad");
+      }
+      renderAll();
+    });
+  }
+
+  elNextDone.addEventListener("click", function () { var n = nextEpisode(); if (n) toggle(n, true); });
+
+  renderTabs();
+  renderAll();
+
+  var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("db") : Promise.resolve(null);
+  use.then(function (db) {
+    if (!db) { startLocal(); return; }
+    // A new collection name: ticks made for the earlier five-place list do not apply to this one.
+    col = db.collection("episodes-4places");
+    var slow = setTimeout(function () {
+      if (mode === "loading") setStatus("The saved ticks cannot be reached yet. Still trying…", "warn");
+    }, 10000);
+    col.onSnapshot(function (snap) {
+      var fresh = {};
+      snap.docs.forEach(function (d) {
+        var n = parseInt(String(d.id).slice(1), 10);
+        var body = d.exists ? d.data() : null;
+        if (n >= 1 && n <= TOTAL && body && body.done === true) fresh[n] = true;
+      });
+      for (var p in pending) { if (done[p]) fresh[p] = true; else delete fresh[p]; }
+      done = fresh;
+      if (!snap.metadata.fromCache) clearTimeout(slow);
+      if (mode === "loading") {
+        mode = "shared";
+        var next = nextEpisode();
+        if (next) tab = roundOf(next).id;
+        renderTabs();
+        setStatus("Ticks are saved in this page for everyone who opens it.");
+      }
+      renderAll();
+    }, function (err) {
+      clearTimeout(slow);
+      if (mode === "loading") { startLocal(); return; }
+      mode = "readonly";
+      setStatus("Lost the connection to the saved ticks. Reload the page to continue.", "bad");
+      renderAll();
+    });
+  }, function () { startLocal(); });
+
+  function startLocal() {
+    mode = "local";
+    loadLocal();
+    var next = nextEpisode();
+    if (next) tab = roundOf(next).id;
+    renderTabs();
+    setStatus("Shared saving is not available in this view. Ticks are kept in this browser only.", "warn");
+    renderAll();
+  }
+})();
+</script>

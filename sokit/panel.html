@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrimsonSnow · Robot panel</title>
+<style>
+  :root {
+    --bg: #0a0c11; --panel: #131720; --panel-2: #1a2030; --line: #283044; --line-2: #34405a;
+    --text: #f4f6fb; --muted: #a7b0c4; --dim: #7d879c;
+    --crimson: #d81e4a; --crimson-2: #ff4d73; --ok: #2fd680; --bad: #ff5468; --warn: #ffb020; --info: #6cb4ff;
+    --radius: 16px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 17px; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+         font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.4; }
+  button, input, select { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+
+  /* ---------- header ---------- */
+  header.top { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 24px;
+               border-bottom: 1px solid var(--line);
+               background: linear-gradient(90deg, rgba(216,30,74,.22), rgba(216,30,74,0) 55%), var(--bg); }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo { width: 48px; height: 48px; border-radius: 13px; background: var(--crimson); display: grid; place-items: center;
+          font-size: 28px; line-height: 1; color: #fff; box-shadow: 0 6px 20px rgba(216,30,74,.35); }
+  h1 { margin: 0; font-size: 1.75rem; letter-spacing: .3px; font-weight: 750; }
+  .sub { margin: 0; color: var(--muted); font-size: .82rem; letter-spacing: 2px; text-transform: uppercase; }
+  .chips { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chip { padding: 6px 12px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line-2);
+          font-size: .8rem; white-space: nowrap; color: var(--muted); }
+  .chip b { color: var(--text); font-weight: 650; }
+  .chip.ok { border-color: rgba(47,214,128,.55); }
+  .chip.warn { border-color: rgba(255,176,32,.7); color: #ffd58a; }
+  .chip.bad { border-color: rgba(255,84,104,.8); color: #ffc2ca; }
+  .chip.mock { background: rgba(108,180,255,.16); border-color: rgba(108,180,255,.6); color: #cfe6ff; font-weight: 700; }
+  .ghost { background: transparent; border: 1px solid var(--line-2); color: var(--muted); border-radius: 10px;
+           padding: 8px 14px; cursor: pointer; }
+  .ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .banners { padding: 12px 24px 0; display: grid; gap: 10px; }
+  .banner { padding: 11px 16px; border-radius: 12px; font-size: .95rem; display: flex; gap: 10px; align-items: center; }
+  .banner.warn { background: rgba(255,176,32,.13); border: 1px solid rgba(255,176,32,.55); color: #ffdc9c; }
+  .banner.safety { background: rgba(216,30,74,.10); border: 1px solid rgba(216,30,74,.45); color: #ffd3dd; }
+  .banner .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+
+  /* ---------- grid ---------- */
+  main.grid { display: grid; gap: 18px; padding: 18px 24px 24px;
+              grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+              grid-template-areas: "score check" "launch log" "results cams"; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; min-width: 0; }
+  .card h2 { margin: 0 0 12px; font-size: .8rem; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  #card-score { grid-area: score; } #card-check { grid-area: check; } #card-launch { grid-area: launch; }
+  #card-log { grid-area: log; } #card-results { grid-area: results; } #card-cams { grid-area: cams; }
+
+  /* ---------- scoreboard ---------- */
+  .score-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .mode { color: var(--muted); font-size: .95rem; }
+  .mode b { color: var(--text); }
+  .attempt-big { font-size: 3.3rem; font-weight: 800; letter-spacing: -1px; line-height: 1.05; }
+  .attempt-big small { font-size: 1.6rem; color: var(--dim); font-weight: 700; }
+  .phase { margin-top: 10px; font-size: 1.75rem; font-weight: 700; min-height: 2.4rem; }
+  .phase.ok { color: var(--ok); } .phase.bad { color: var(--bad); } .phase.live { color: var(--crimson-2); }
+  .phase-sub { color: var(--muted); font-size: 1.05rem; min-height: 1.5rem; }
+  .tiles { display: flex; gap: 12px; flex-wrap: wrap; margin: 22px 0 18px; }
+  .tile { width: 104px; height: 112px; border-radius: 16px; background: var(--panel-2); border: 2px solid var(--line-2);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+  .tile .n { position: absolute; top: 7px; left: 10px; font-size: .75rem; color: var(--dim); font-weight: 700; }
+  .tile .icon { font-size: 2.7rem; line-height: 1; font-weight: 800; color: var(--dim); }
+  .tile .runs { font-size: .72rem; color: var(--muted); margin-top: 6px; }
+  .tile.ok { border-color: var(--ok); background: rgba(47,214,128,.12); } .tile.ok .icon { color: var(--ok); }
+  .tile.bad { border-color: var(--bad); background: rgba(255,84,104,.12); } .tile.bad .icon { color: var(--bad); }
+  .tile.skip { opacity: .5; }
+  .tile.now { border-color: var(--crimson-2); animation: pulse 1.4s ease-in-out infinite; }
+  .tile.now .icon { color: var(--crimson-2); }
+  .badge { position: absolute; bottom: -11px; left: 50%; transform: translateX(-50%); font-size: .66rem; padding: 3px 9px;
+           border-radius: 999px; background: var(--warn); color: #261a00; font-weight: 800; white-space: nowrap; letter-spacing: .3px; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,115,.45); } 50% { box-shadow: 0 0 0 9px rgba(255,77,115,0); } }
+  .streak { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 1rem; margin-bottom: 16px; flex-wrap: wrap; }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 18px; height: 18px; border-radius: 50%; background: var(--panel-2); border: 2px solid var(--line-2); display: block; }
+  .dots i.on { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 10px rgba(47,214,128,.5); }
+  .streak b { color: var(--text); font-size: 1.1rem; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .controls + .controls { margin-top: 10px; }
+  button.btn { border-radius: 13px; border: 1px solid var(--line-2); background: var(--panel-2); padding: 13px 20px;
+               cursor: pointer; font-weight: 650; transition: transform .05s, filter .15s; }
+  button.btn:hover:not(:disabled) { filter: brightness(1.15); }
+  button.btn:active:not(:disabled) { transform: translateY(1px); }
+  button.btn:disabled { opacity: .32; cursor: not-allowed; }
+  button.big { font-size: 1.2rem; padding: 16px 26px; }
+  button.primary { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+  button.stop { background: #5a1022; border-color: var(--bad); color: #fff; }
+  button.okb { background: rgba(47,214,128,.18); border-color: var(--ok); }
+  button.badb { background: rgba(255,84,104,.18); border-color: var(--bad); }
+  button.quiet { background: transparent; }
+  kbd { font: 600 .7rem/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border: 1px solid rgba(255,255,255,.35);
+        border-radius: 6px; margin-left: 8px; opacity: .8; vertical-align: 2px; }
+  .note { flex: 1 1 220px; min-width: 160px; background: #0d1018; border: 1px solid var(--line-2); border-radius: 12px; padding: 13px 14px; }
+
+  /* ---------- last check ---------- */
+  .verdict { display: inline-flex; align-items: center; gap: 10px; font-size: 1.9rem; font-weight: 800; letter-spacing: .5px; }
+  .verdict.ok { color: var(--ok); } .verdict.bad { color: var(--bad); } .verdict.none { color: var(--dim); }
+  .reason { font-size: 1.15rem; margin: 4px 0 2px; min-height: 1.6rem; }
+  .explain { color: var(--muted); font-style: italic; min-height: 1.4rem; font-size: .95rem; }
+  .photos { display: grid; grid-template-columns: 2.2fr 1fr; gap: 10px; margin-top: 14px; align-items: start; }
+  figure { margin: 0; position: relative; }
+  figure img, .placeholder { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: #06080c;
+                             border: 1px solid var(--line); display: block; }
+  .placeholder { display: grid; place-items: center; color: var(--dim); font-size: .9rem; text-align: center; padding: 10px; }
+  figcaption { position: absolute; left: 8px; bottom: 8px; font-size: .7rem; padding: 2px 8px; border-radius: 8px;
+               background: rgba(0,0,0,.6); color: #dfe5f2; letter-spacing: .5px; }
+  .meta { color: var(--dim); font-size: .82rem; margin-top: 10px; min-height: 1.2rem; }
+
+  /* ---------- launch ---------- */
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .seg button { border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel-2); padding: 9px 14px; cursor: pointer;
+                color: var(--muted); font-weight: 600; }
+  .seg button.on { background: rgba(216,30,74,.22); border-color: var(--crimson-2); color: var(--text); }
+  .form { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 14px; margin-bottom: 14px; }
+  .form label { display: grid; gap: 5px; font-size: .8rem; color: var(--muted); }
+  .form label.wide { grid-column: 1 / -1; }
+  .form input[type=number], .form input[type=text], .form select {
+    background: #0d1018; border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; font-size: .95rem; width: 100%; }
+  .form label.check { display: flex; align-items: center; gap: 9px; font-size: .9rem; color: var(--text); }
+  .form label.check input { width: 18px; height: 18px; accent-color: var(--crimson); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .msg { color: var(--muted); font-size: .9rem; }
+  .msg.err { color: #ff9aa8; }
+  .cmdline { margin-top: 12px; font: .82rem/1.4 ui-monospace, Consolas, "Cascadia Mono", Menlo, monospace; color: var(--info);
+             word-break: break-all; min-height: 1.2rem; }
+
+  /* ---------- log ---------- */
+  pre#log { margin: 0; height: 330px; overflow: auto; background: #05070b; border: 1px solid var(--line); border-radius: 12px;
+            padding: 12px 14px; font: .78rem/1.5 ui-monospace, Consolas, "Cascadia Mono", Menlo, monospace;
+            white-space: pre-wrap; word-break: break-word; color: #c9d1e2; }
+  .l-sep { color: var(--crimson-2); font-weight: 700; } .l-ok { color: var(--ok); } .l-bad { color: #ff8f9d; }
+  .l-panel { color: var(--info); } .l-mock { color: #9fb9de; } .l-demo { color: #eef2fa; }
+  form.raw { display: flex; gap: 8px; margin-top: 10px; }
+  form.raw input { flex: 1; min-width: 0; background: #0d1018; border: 1px solid var(--line-2); border-radius: 10px; padding: 9px 12px; }
+
+  /* ---------- results / cameras ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--dim); font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.pol { word-break: break-word; }
+  .sub-h { margin: 16px 0 6px; font-size: .78rem; color: var(--muted); font-weight: 700; }
+  .empty { color: var(--dim); font-size: .9rem; }
+  .cams-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 12px; }
+  .cams-grid figure img { aspect-ratio: 4 / 3; }
+
+  footer { color: var(--dim); font-size: .75rem; padding: 0 24px 22px; }
+
+  /* ---------- jury view: only the score and the last check, bigger ---------- */
+  body.jury main.grid { grid-template-areas: "score check"; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  body.jury #card-launch, body.jury #card-log, body.jury #card-results, body.jury #card-cams { display: none; }
+  body.jury .card { min-height: calc(100vh - 250px); }
+  body.jury .attempt-big { font-size: 4.6rem; } body.jury .phase { font-size: 2.3rem; }
+  body.jury .tile { width: 132px; height: 140px; } body.jury .tile .icon { font-size: 3.5rem; }
+  body.jury .verdict { font-size: 2.6rem; } body.jury .reason { font-size: 1.45rem; }
+
+  @media (max-width: 1100px) {
+    main.grid, body.jury main.grid { grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "score" "check" "launch" "log" "results" "cams"; }
+    body.jury main.grid { grid-template-areas: "score" "check"; }
+    body.jury .card { min-height: 0; }
+  }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    header.top, .banners, main.grid, footer { padding-left: 16px; padding-right: 16px; }
+    .chips { margin-left: 0; }
+    .attempt-big { font-size: 2.5rem; }
+    .tile { width: 76px; height: 86px; } .tile .icon { font-size: 2rem; }
+    .photos { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">&#10052;</div>
+    <div><h1>CrimsonSnow</h1><p class="sub">SO-101 &middot; LeRobot</p></div>
+  </div>
+  <div class="chips" aria-live="polite">
+    <span class="chip mock" id="chip-mode" hidden>MOCK</span>
+    <span class="chip" id="chip-proc">idle</span>
+    <span class="chip" id="chip-check">retry check: &hellip;</span>
+    <span class="chip" id="chip-sc">SenseCraft: &hellip;</span>
+    <span class="chip bad" id="chip-conn" hidden>connection lost</span>
+  </div>
+  <button class="ghost" id="btn-jury" title="Only the score and the last check, bigger (key J)">Jury view</button>
+</header>
+
+<div class="banners">
+  <div class="banner warn" id="banner-sc" hidden><span class="dot"></span>SenseCraft holds the arm and cameras: close it before a robot command.</div>
+  <div class="banner safety" id="banner-safety"><span class="dot"></span><span>The arm moves: someone stays at the robot. Stop arm stops it and it returns to its start pose.</span></div>
+</div>
+
+<main class="grid">
+  <section class="card" id="card-score" aria-label="Score">
+    <div class="score-head">
+      <div class="attempt-big" id="attempt-label">Ready</div>
+      <div class="mode" id="mode-label">Nothing running</div>
+    </div>
+    <div class="phase" id="phase" aria-live="polite">Choose what to run, then press Run</div>
+    <div class="phase-sub" id="phase-sub"></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="streak">
+      <div class="dots" id="dots"></div>
+      <span><b id="streak-n">0</b> in a row <span id="streak-best"></span></span>
+      <span id="summary" class="msg"></span>
+    </div>
+    <div class="controls">
+      <button class="btn primary big" id="btn-start" disabled>Start attempt<kbd>Enter</kbd></button>
+      <button class="btn stop big" id="btn-stop" disabled>Stop arm<kbd>Esc</kbd></button>
+      <button class="btn" id="btn-finish" disabled title="Stops after this run, the arm returns to its start pose, the session ends">Finish</button>
+      <button class="btn quiet" id="btn-abort" disabled title="Interrupts the program now; killed after 5 s if it is still running">Abort</button>
+    </div>
+    <div class="controls" id="try-controls" hidden>
+      <button class="btn okb big" id="btn-s" disabled>Success<kbd>S</kbd></button>
+      <input class="note" id="fail-note" maxlength="150" placeholder="what went wrong (optional, saved with Fail)">
+      <button class="btn badb big" id="btn-f" disabled>Fail<kbd>F</kbd></button>
+      <button class="btn" id="btn-x" disabled>Skip<kbd>X</kbd></button>
+    </div>
+  </section>
+
+  <section class="card" id="card-check" aria-label="Last check">
+    <h2>Last check</h2>
+    <div class="verdict none" id="verdict">&mdash;</div>
+    <div class="reason" id="reason">No run yet</div>
+    <div class="explain" id="explain"></div>
+    <div class="photos">
+      <figure><img id="photo-scene" alt="Overhead camera at the last check" hidden><div class="placeholder" id="ph-scene">no photo yet</div><figcaption>overhead</figcaption></figure>
+      <figure><img id="photo-wrist" alt="Wrist camera at the last check" hidden><div class="placeholder" id="ph-wrist">&mdash;</div><figcaption>wrist</figcaption></figure>
+    </div>
+    <div class="meta" id="photo-meta"></div>
+  </section>
+
+  <section class="card" id="card-launch" aria-label="Run a command">
+    <h2>Run</h2>
+    <div class="seg" id="cmd-seg">
+      <button data-cmd="demo" class="on">Demo with retries</button>
+      <button data-cmd="try">Manual trials</button>
+      <button data-cmd="teleop">Teleop</button>
+      <button data-cmd="cameras">Cameras</button>
+      <button data-cmd="doctor">Doctor</button>
+    </div>
+    <div class="form">
+      <label class="wide f-model">Model <select id="model"></select></label>
+      <label class="wide f-path" hidden>Policy folder or Hugging Face id <input id="policy" type="text" maxlength="500" placeholder="outputs/train/&lt;run&gt;/checkpoints/last/pretrained_model"></label>
+      <label class="f-demo">Runs per attempt <input id="tries" type="number" min="1" max="9" value="3"></label>
+      <label class="f-demo">Attempts <input id="attempts" type="number" min="0" max="99" value="5"></label>
+      <label class="f-run">Seconds per run <input id="seconds" type="number" min="5" max="600" value="40"></label>
+      <label class="f-demo">Retry check <select id="check">
+        <option value="auto" title="RETRY_CHECK in .env decides">from .env</option>
+        <option value="local">local vision model</option>
+        <option value="openai">OpenAI</option>
+        <option value="claude">Claude</option>
+        <option value="grip">gripper only</option>
+      </select></label>
+      <label class="check f-teleop" hidden><input id="no-cams" type="checkbox"> without the camera window</label>
+      <label class="check wide"><input id="dry" type="checkbox"> Dry run: print the command, move nothing</label>
+    </div>
+    <div class="row">
+      <button class="btn primary big" id="btn-run">Run</button>
+      <span class="msg" id="run-msg"></span>
+    </div>
+    <div class="cmdline" id="cmdline"></div>
+  </section>
+
+  <section class="card" id="card-log" aria-label="Output">
+    <h2>Output</h2>
+    <pre id="log" aria-live="off"></pre>
+    <form class="raw" id="raw-form" autocomplete="off">
+      <input id="raw" maxlength="200" placeholder="type a line for the program (only if it asks something unexpected)">
+      <button class="btn" type="submit">Send</button>
+    </form>
+  </section>
+
+  <section class="card" id="card-results" aria-label="Results so far">
+    <h2>Results so far</h2>
+    <div id="results"><div class="empty">loading&hellip;</div></div>
+  </section>
+
+  <section class="card" id="card-cams" aria-label="Cameras">
+    <h2>Cameras</h2>
+    <div class="row">
+      <button class="btn" id="btn-cams">Show cameras</button>
+      <span class="msg" id="cam-msg">Live preview, off by default. Never while a command runs.</span>
+    </div>
+    <div class="cams-grid" id="cam-grid"></div>
+  </section>
+</main>
+<footer>CrimsonSnow &middot; Hackathon LeRobot Bilbao 2026 &middot; local control panel: the page talks only to this computer.</footer>
+
+<script nonce="__PANEL_NONCE__">
+"use strict";
+const TOKEN = "__PANEL_TOKEN__";
+const CONFIG = __PANEL_CONFIG__;
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+let seq = 0, cmd = "demo", state = null, busy = false, resultsKey = "", photoKey = "", camsShown = false;
+
+async function api(path, body) {
+  const opts = { headers: { "X-Panel-Token": TOKEN }, cache: "no-store" };
+  if (body !== undefined) {
+    opts.method = "POST";
+    opts.headers["Content-Type"] = "application/json";
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(path, opts);
+  let data = {};
+  try { data = await res.json(); } catch (e) { /* not JSON */ }
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
+}
+
+/* ---------------- polling ---------------- */
+async function poll() {
+  try {
+    const s = await api("/api/state?since=" + seq);
+    $("chip-conn").hidden = true;
+    if (s.truncated) $("log").textContent = "";
+    appendLines(s.lines);
+    seq = s.seq;
+    state = s;
+    render(s);
+  } catch (e) {
+    $("chip-conn").hidden = false;
+  } finally {
+    setTimeout(poll, 400);
+  }
+}
+
+function appendLines(lines) {
+  if (!lines.length) return;
+  const pre = $("log");
+  const atBottom = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 40;
+  const frag = document.createDocumentFragment();
+  for (const [, text] of lines) frag.appendChild(el("span", lineClass(text), text + "\n"));
+  pre.appendChild(frag);
+  while (pre.childNodes.length > 1500) pre.removeChild(pre.firstChild);
+  if (atBottom) pre.scrollTop = pre.scrollHeight;
+}
+
+function lineClass(t) {
+  if (t.startsWith("────")) return "l-sep";
+  if (/-> SUCCESS|: SUCCESS in| succeeded,|successes this session/.test(t)) return "l-ok";
+  if (/-> not done|: FAILED in|Traceback|Error|error:/.test(t)) return "l-bad";
+  if (t.startsWith("[panel]")) return "l-panel";
+  if (t.startsWith("[mock]")) return "l-mock";
+  if (/^\[(demo|try)\]/.test(t)) return "l-demo";
+  return "";
+}
+
+/* ---------------- rendering ---------------- */
+function render(s) {
+  const st = s.status || {};
+  $("chip-mode").hidden = !st.mock && !st.lan;
+  $("chip-mode").textContent = st.mock ? "MOCK" : "LAN";
+  $("banner-sc").hidden = !st.sensecraft;
+  setChip("chip-sc", "SenseCraft: ", st.sensecraft ? "running" : "closed", st.sensecraft ? "warn" : "ok");
+  const keys = st.keys || {};
+  let check = st.retry_check;
+  let checkText = check ? check + " (.env)" : "auto";
+  if (!check) checkText += keys.claude ? " → Claude" : keys.openai ? " → OpenAI" : " → gripper";
+  setChip("chip-check", "retry check: ", checkText, "");
+  const p = s.proc;
+  if (p && p.running) setChip("chip-proc", "", (p.mocked ? "simulating " : p.dry_run ? "dry run " : "running ") + "so " + p.cmd, "warn");
+  else if (p) setChip("chip-proc", "", "so " + p.cmd + " ended (" + p.exit_code + ")", p.exit_code === 0 ? "ok" : "bad");
+  else setChip("chip-proc", "", "idle", "");
+  renderScore(s);
+  renderCheck(s);
+  renderButtons(s);
+  renderCams(st);
+  const rk = JSON.stringify([p && p.running, s.session && s.session.attempts.length, s.session && s.session.summary,
+                             s.session && s.session.attempts.map((a) => a.result).join("")]);
+  if (rk !== resultsKey) { resultsKey = rk; loadResults(); }
+}
+
+function setChip(id, label, value, cls) {
+  const c = $(id);
+  c.className = "chip" + (cls ? " " + cls : "");
+  c.textContent = "";
+  if (label) c.appendChild(document.createTextNode(label));
+  c.appendChild(el("b", "", value));
+}
+
+const MODE_NAMES = { demo: "Demo with retries", try: "Manual trials", teleop: "Teleoperation", cameras: "Camera check", doctor: "Self-check" };
+
+function renderScore(s) {
+  const p = s.proc, x = s.session;
+  const attemptLabel = $("attempt-label"), phase = $("phase"), sub = $("phase-sub");
+  phase.className = "phase";
+  if (!p || !x) {
+    attemptLabel.textContent = "Ready";
+    $("mode-label").textContent = "Nothing running";
+    phase.textContent = "Choose what to run, then press Run";
+    sub.textContent = CONFIG.mock ? "Mock mode: every command is simulated, no robot needed." : "";
+    drawTiles([], 5, 0, false);
+    drawStreak(0, 0);
+    $("summary").textContent = "";
+    return;
+  }
+  const mode = x.mode;
+  const modeLabel = $("mode-label");
+  modeLabel.textContent = "";
+  modeLabel.appendChild(el("b", "", MODE_NAMES[mode] || mode));
+  if (x.policy) modeLabel.appendChild(document.createTextNode(" · " + x.policy));
+  if (p.dry_run) modeLabel.appendChild(document.createTextNode(" · dry run"));
+
+  if (mode !== "demo" && mode !== "try") {
+    attemptLabel.textContent = "so " + p.cmd;
+    phase.textContent = p.running ? "Running" : (p.exit_code === 0 ? "Done" : "Ended with exit code " + p.exit_code);
+    if (p.running) phase.classList.add("live");
+    sub.textContent = p.running ? "see the output" : "";
+    drawTiles([], 0, 0, false);
+    drawStreak(0, 0);
+    $("summary").textContent = "";
+    return;
+  }
+  const total = x.attempts_total;
+  const current = x.attempt || (x.attempts.length ? x.attempts[x.attempts.length - 1].n : 0);
+  if (mode === "demo") {
+    attemptLabel.textContent = "";
+    attemptLabel.appendChild(document.createTextNode("Attempt " + (current || "–")));
+    if (total) attemptLabel.appendChild(el("small", "", " / " + total));
+  } else {
+    attemptLabel.textContent = "Try " + (x.attempts.length || "–");
+  }
+  const [title, detail, cls] = phaseText(x, p);
+  phase.textContent = title;
+  if (cls) phase.classList.add(cls);
+  sub.textContent = detail;
+  if (mode === "demo") drawTiles(x.attempts, total, current, x.phase === "running" || x.phase === "checked");
+  else drawTryTiles(x.attempts, x.phase);
+  drawStreak(x.streak, x.best_streak);
+  const sm = x.summary;
+  $("summary").textContent = sm ? (mode === "demo"
+    ? "Session: " + sm.ok + "/" + sm.total + " succeeded, " + sm.rescued + " rescued by a retry"
+    : "Session: " + sm.ok + "/" + sm.total + " successes") : "";
+}
+
+function phaseText(x, p) {
+  const last = x.last;
+  const lastAttempt = x.attempts.length ? x.attempts[x.attempts.length - 1] : null;
+  switch (x.phase) {
+    case "starting": return [p.dry_run ? "Dry run" : "Starting…", p.dry_run ? "prints the command only" : (p.mocked ? "simulated session" : "loading the policy, connecting the arm and the cameras"), "live"];
+    case "attempt": return [x.mode === "demo" ? "Put the battery on its place" : "Set up the scene", "then press Start attempt", ""];
+    case "running": return [x.stop_requested ? "Stopping the arm…" : "Arm running", x.mode === "demo" ? "run " + x.run + " of " + (x.tries || "?") : "Stop arm stops it", "live"];
+    case "checked":
+      if (x.mode === "try") return ["How did it go?", "mark it: Success, Fail or Skip", ""];
+      if (!last) return ["Checking…", "", "live"];
+      return [last.success ? "Success" : "Not done yet", last.reason + (last.success ? "" : " → checking whether to run again"), last.success ? "ok" : "bad"];
+    case "between":
+      if (!lastAttempt) return ["", "", ""];
+      return [lastAttempt.success ? "Attempt " + lastAttempt.n + ": success" : "Attempt " + lastAttempt.n + ": failed",
+              lastAttempt.rescued ? "rescued by a retry" : "", lastAttempt.success ? "ok" : "bad"];
+    case "result": return ["How did it go?", "Success, Fail (with a note) or Skip", ""];
+    case "logged": return [lastAttempt && lastAttempt.result === "s" ? "Logged: success" : lastAttempt && lastAttempt.result === "f" ? "Logged: fail" : "Not logged", "", lastAttempt && lastAttempt.result === "s" ? "ok" : ""];
+    case "stopping": return ["Finishing…", "the arm returns to its start pose", "live"];
+    case "done": return ["Done", "", "ok"];
+    case "exited": return ["Ended", x.exit_code === 0 ? "" : "exit code " + x.exit_code + ": see the output", x.exit_code === 0 ? "" : "bad"];
+    default: return [x.phase, "", ""];
+  }
+}
+
+function tile(n, cls, icon, runs, badge) {
+  const t = el("div", "tile" + (cls ? " " + cls : ""));
+  t.appendChild(el("span", "n", String(n)));
+  t.appendChild(el("span", "icon", icon));
+  if (runs) t.appendChild(el("span", "runs", runs));
+  if (badge) t.appendChild(el("span", "badge", badge));
+  return t;
+}
+
+function drawTiles(attempts, total, current, live) {
+  const box = $("tiles");
+  box.textContent = "";
+  const count = total > 0 ? Math.max(total, attempts.length) : Math.max(5, attempts.length + 1);
+  for (let n = 1; n <= count; n++) {
+    const a = attempts.find((v) => v.n === n);
+    const runs = a && a.runs.length ? a.runs.length + (a.runs.length > 1 ? " runs" : " run") : "";
+    if (a && a.success === true) box.appendChild(tile(n, "ok", "✓", runs, a.rescued ? "retry saved it" : ""));
+    else if (a && a.success === false) box.appendChild(tile(n, "bad", "✗", runs, ""));
+    else if (n === current && live) box.appendChild(tile(n, "now", "…", runs || "running", ""));
+    else box.appendChild(tile(n, "", "", "", ""));
+  }
+}
+
+function drawTryTiles(attempts, phase) {
+  const box = $("tiles");
+  box.textContent = "";
+  attempts.forEach((a, i) => {
+    const last = i === attempts.length - 1;
+    if (a.result === "s") box.appendChild(tile(i + 1, "ok", "✓", "", ""));
+    else if (a.result === "f") box.appendChild(tile(i + 1, "bad", "✗", a.note ? a.note.slice(0, 14) : "", ""));
+    else if (a.result === "x") box.appendChild(tile(i + 1, "skip", "–", "skipped", ""));
+    else if (last && phase === "running") box.appendChild(tile(i + 1, "now", "…", "running", ""));
+    else if (last && (phase === "checked" || phase === "result")) box.appendChild(tile(i + 1, "now", "?", "your call", ""));
+    else box.appendChild(tile(i + 1, "", "", "", ""));
+  });
+  if (!attempts.length) for (let n = 1; n <= 5; n++) box.appendChild(tile(n, "", "", "", ""));
+}
+
+function drawStreak(n, best) {
+  const dots = $("dots");
+  dots.textContent = "";
+  for (let i = 0; i < 5; i++) dots.appendChild(el("i", i < Math.min(n, 5) ? "on" : ""));
+  $("streak-n").textContent = String(n);
+  $("streak-best").textContent = best > n ? "(best " + best + ")" : "";
+}
+
+function renderCheck(s) {
+  const x = s.session, last = x && x.last;
+  const v = $("verdict"), reason = $("reason"), explain = $("explain");
+  if (last && x.mode === "demo" && last.success !== null) {
+    v.className = "verdict " + (last.success ? "ok" : "bad");
+    v.textContent = last.success ? "✓ SUCCESS" : "✗ NOT DONE";
+    reason.textContent = last.reason;
+    explain.textContent = last.explanation ? last.model + ": " + last.explanation : "";
+  } else if (last && x.mode === "try") {
+    const a = x.attempts.length ? x.attempts[x.attempts.length - 1] : null;
+    const r = a ? a.result : "";
+    v.className = "verdict " + (r === "s" ? "ok" : r === "f" ? "bad" : "none");
+    v.textContent = r === "s" ? "✓ SUCCESS" : r === "f" ? "✗ FAIL" : r === "x" ? "skipped" : "your call";
+    reason.textContent = "gripper " + last.grip + " · " + (last.seconds !== null ? last.seconds.toFixed(1) + " s" : "") + " (" + last.ended_by + ")";
+    explain.textContent = a && a.note ? "note: " + a.note : "";
+  } else {
+    v.className = "verdict none";
+    v.textContent = "—";
+    reason.textContent = x && x.mode === "demo" ? "No run checked yet in this session" : "No run yet";
+    explain.textContent = "";
+  }
+  const ph = s.photo;
+  const key = ph ? [ph.scene, ph.wrist, ph.mtime].join("|") : "";
+  if (key !== photoKey) {
+    photoKey = key;
+    showPhoto("scene", ph && ph.scene, ph && ph.mtime);
+    showPhoto("wrist", ph && ph.wrist, ph && ph.mtime);
+  }
+  let meta = "";
+  if (ph) {
+    const m = /^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/.exec(ph.session);
+    const when = m ? m[1] + "-" + m[2] + "-" + m[3] + " " + m[4] + ":" + m[5] + ":" + m[6] : ph.session;
+    meta = "photo: session " + when + " · attempt " + ph.attempt + " · run " + ph.run;
+    if (m && s.proc && s.proc.started) {
+      const t = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() / 1000;
+      if (t < s.proc.started - 5) meta += " (an earlier session)";
+    } else if (!s.proc) meta += " (an earlier session)";
+  }
+  if (last && x.mode === "demo" && last.seconds !== null) {
+    meta += (meta ? "  ·  " : "") + "run " + last.n + ": " + last.seconds.toFixed(1) + " s (" + last.ended_by + "), gripper " + last.grip + ", camera " + last.camera;
+  }
+  $("photo-meta").textContent = meta;
+}
+
+function showPhoto(which, path, mtime) {
+  const img = $("photo-" + which), ph = $("ph-" + which);
+  if (!path) { img.hidden = true; img.removeAttribute("src"); ph.hidden = false; return; }
+  img.onload = () => { img.hidden = false; ph.hidden = true; };
+  img.onerror = () => { img.hidden = true; ph.hidden = false; };
+  img.src = "/api/photo?path=" + encodeURIComponent(path) + "&t=" + encodeURIComponent(TOKEN) + "&v=" + encodeURIComponent(mtime || 0);
+}
+
+function renderButtons(s) {
+  const p = s.proc, x = s.session;
+  const running = !!(p && p.running);
+  const prompt = running && x ? x.prompt : null;
+  const prompts = !!(p && p.prompts);
+  $("btn-start").disabled = prompt !== "attempt";
+  $("btn-stop").disabled = prompt !== "running" || !!(x && x.stop_requested);
+  $("btn-finish").disabled = !running || prompt === "result" || !!(p && p.finishing);
+  $("btn-finish").textContent = prompts || !running ? "Finish" : "Stop";
+  $("btn-abort").disabled = !running;
+  const isTry = !!(x && x.mode === "try" && prompts);
+  $("try-controls").hidden = !isTry;
+  for (const id of ["btn-s", "btn-f", "btn-x"]) $(id).disabled = prompt !== "result";
+  $("btn-run").disabled = running || busy;
+  $("raw-form").querySelector("button").disabled = !running;
+}
+
+function renderCams(st) {
+  const cp = st.camera_preview || {};
+  const on = !!cp.enabled;
+  $("btn-cams").textContent = on ? "Hide cameras" : "Show cameras";
+  $("btn-cams").disabled = !on && !!cp.blocked;
+  const failed = cp.failed && Object.keys(cp.failed).length ? Object.entries(cp.failed).map(([n, e]) => n + ": " + e).join("; ") : "";
+  $("cam-msg").textContent = failed || (on ? "Live. Starting any command switches the preview off." : (cp.blocked ? "Off: " + cp.blocked : "Live preview, off by default. Never while a command runs."));
+  const grid = $("cam-grid");
+  if (on && !camsShown) {
+    grid.textContent = "";
+    for (const c of st.cameras || []) {
+      const f = el("figure");
+      const img = el("img");
+      img.alt = "Live camera " + c.name;
+      img.src = "/api/camera/" + encodeURIComponent(c.name) + "?t=" + encodeURIComponent(TOKEN);
+      f.appendChild(img);
+      f.appendChild(el("figcaption", "", c.name + " (camera " + c.index + ")"));
+      grid.appendChild(f);
+    }
+    camsShown = true;
+  } else if (!on && camsShown) {
+    for (const img of grid.querySelectorAll("img")) img.removeAttribute("src");
+    grid.textContent = "";
+    camsShown = false;
+  }
+}
+
+/* ---------------- results ---------------- */
+async function loadResults() {
+  try {
+    const r = await api("/api/results");
+    const box = $("results");
+    box.textContent = "";
+    box.appendChild(el("div", "sub-h", "Demos with retries (journal/demo.csv)"));
+    if (r.demo.length) {
+      box.appendChild(table(["Policy", "Attempts", "Success", "Rescued", "Best streak"],
+        r.demo.map((g) => [g.policy, g.attempts, pct(g.successes, g.attempts), g.rescued, g.best_streak])));
+    } else box.appendChild(el("div", "empty", "none yet"));
+    box.appendChild(el("div", "sub-h", "Manual trials (journal/eval.csv)"));
+    if (r.eval.length) {
+      box.appendChild(table(["Policy", "Tries", "Success", "Fails"],
+        r.eval.map((g) => [g.policy, g.tries, pct(g.successes, g.tries), g.fails])));
+    } else box.appendChild(el("div", "empty", "none yet"));
+  } catch (e) { /* the next state change retries */ }
+}
+
+function pct(ok, n) { return n ? ok + "/" + n + " (" + Math.round((100 * ok) / n) + "%)" : "–"; }
+
+function table(head, rows) {
+  const t = el("table"), thead = el("thead"), tr = el("tr");
+  head.forEach((h, i) => tr.appendChild(el("th", i ? "num" : "", h)));
+  thead.appendChild(tr);
+  t.appendChild(thead);
+  const tb = el("tbody");
+  for (const row of rows) {
+    const r = el("tr");
+    row.forEach((v, i) => r.appendChild(el("td", i ? "num" : "pol", String(v))));
+    tb.appendChild(r);
+  }
+  t.appendChild(tb);
+  return t;
+}
+
+/* ---------------- launch form ---------------- */
+async function loadModels() {
+  const sel = $("model");
+  sel.textContent = "";
+  let models = [];
+  try { models = (await api("/api/models")).models; } catch (e) { /* none */ }
+  for (const m of models) {
+    const o = el("option", "", m.name + (m.steps ? " — " + Number(m.steps).toLocaleString("en") + " steps" : "") + " (SenseCraft)");
+    o.value = "sc:" + m.name;
+    sel.appendChild(o);
+  }
+  const last = el("option", "", "Last run trained with so train");
+  last.value = "last";
+  sel.appendChild(last);
+  const path = el("option", "", "Another folder or Hugging Face id…");
+  path.value = "path";
+  sel.appendChild(path);
+  syncForm();
+}
+
+function syncForm() {
+  for (const b of $("cmd-seg").querySelectorAll("button")) b.classList.toggle("on", b.dataset.cmd === cmd);
+  const policyCmd = cmd === "demo" || cmd === "try";
+  for (const e of document.querySelectorAll(".f-model")) e.hidden = !policyCmd;
+  for (const e of document.querySelectorAll(".f-path")) e.hidden = !policyCmd || $("model").value !== "path";
+  for (const e of document.querySelectorAll(".f-demo")) e.hidden = cmd !== "demo";
+  for (const e of document.querySelectorAll(".f-run")) e.hidden = !policyCmd;
+  for (const e of document.querySelectorAll(".f-teleop")) e.hidden = cmd !== "teleop";
+  $("dry").disabled = cmd === "doctor";
+  if (cmd === "doctor") $("dry").checked = false;
+}
+
+function request() {
+  const req = { cmd: cmd, dry_run: $("dry").checked };
+  if (cmd === "demo" || cmd === "try") {
+    const v = $("model").value;
+    if (v.startsWith("sc:")) { req.source = "sensecraft"; req.sensecraft = v.slice(3); }
+    else if (v === "path") { req.source = "policy"; req.policy = $("policy").value; }
+    else req.source = "last";
+    req.seconds = $("seconds").value;
+    if (cmd === "demo") { req.tries = $("tries").value; req.attempts = $("attempts").value; req.check = $("check").value; }
+  }
+  if (cmd === "teleop") req.no_cameras = $("no-cams").checked;
+  return req;
+}
+
+async function run() {
+  const msg = $("run-msg");
+  busy = true;
+  $("btn-run").disabled = true;
+  msg.className = "msg";
+  msg.textContent = "starting…";
+  try {
+    const r = await api("/api/run", request());
+    $("cmdline").textContent = r.shown + (r.mocked ? "   (simulated)" : "");
+    msg.textContent = r.mocked ? "simulated: no robot" : "";
+  } catch (e) {
+    msg.className = "msg err";
+    msg.textContent = e.message;
+  } finally {
+    busy = false;
+  }
+}
+
+async function send(text, expect) {
+  try { await api("/api/input", { text: text, expect: expect }); }
+  catch (e) { flash(e.message); }
+}
+
+async function post(path) {
+  try { await api(path, {}); } catch (e) { flash(e.message); }
+}
+
+function flash(text) {
+  const msg = $("run-msg");
+  msg.className = "msg err";
+  msg.textContent = text;
+  setTimeout(() => { if (msg.textContent === text) msg.textContent = ""; }, 6000);
+}
+
+/* ---------------- wiring ---------------- */
+$("cmd-seg").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button");
+  if (b && b.dataset.cmd) { cmd = b.dataset.cmd; syncForm(); }
+});
+$("model").addEventListener("change", syncForm);
+$("btn-run").addEventListener("click", run);
+$("btn-start").addEventListener("click", () => send("", "attempt"));
+$("btn-stop").addEventListener("click", () => send("", "running"));
+$("btn-finish").addEventListener("click", () => post("/api/finish"));
+$("btn-abort").addEventListener("click", () => post("/api/abort"));
+$("btn-s").addEventListener("click", () => send("s", "result"));
+$("btn-f").addEventListener("click", () => {
+  const note = $("fail-note").value.replace(/[\u0000-\u001f\u007f]/g, " ").trim();
+  send(("f " + note).trim(), "result");
+  $("fail-note").value = "";
+});
+$("btn-x").addEventListener("click", () => send("x", "result"));
+$("btn-cams").addEventListener("click", async () => {
+  const on = !(state && state.status && state.status.camera_preview && state.status.camera_preview.enabled);
+  try { await api("/api/cameras", { on: on }); } catch (e) { $("cam-msg").textContent = e.message; }
+});
+$("raw-form").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const v = $("raw").value;
+  $("raw").value = "";
+  send(v, "any");
+});
+function setJury(on) {
+  document.body.classList.toggle("jury", on);
+  $("btn-jury").textContent = on ? "Full panel" : "Jury view";
+  history.replaceState(null, "", on ? "#jury" : location.pathname + location.search);
+}
+$("btn-jury").addEventListener("click", () => setJury(!document.body.classList.contains("jury")));
+if (location.hash === "#jury") setJury(true);
+document.addEventListener("keydown", (ev) => {
+  const t = ev.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) {
+    if (ev.key === "Escape") t.blur();
+    return;
+  }
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  const prompt = state && state.proc && state.proc.running && state.session ? state.session.prompt : null;
+  if (ev.key === "Enter" && prompt === "attempt") { ev.preventDefault(); send("", "attempt"); }
+  else if (ev.key === "Escape" && prompt === "running") { ev.preventDefault(); send("", "running"); }
+  else if (prompt === "result" && (ev.key === "s" || ev.key === "S")) send("s", "result");
+  else if (prompt === "result" && (ev.key === "f" || ev.key === "F")) $("btn-f").click();
+  else if (prompt === "result" && (ev.key === "x" || ev.key === "X")) send("x", "result");
+  else if (ev.key === "j" || ev.key === "J") setJury(!document.body.classList.contains("jury"));
+});
+
+if (CONFIG.mock) {
+  $("banner-safety").lastElementChild.textContent =
+    "Mock mode: nothing moves, every command is simulated. With the real robot: someone stays at the robot.";
+}
+if (CONFIG.defaults) {
+  $("tries").value = CONFIG.defaults.tries;
+  $("attempts").value = CONFIG.defaults.attempts;
+  $("seconds").value = CONFIG.defaults.seconds;
+}
+loadModels();
+loadResults();
+poll();
+</script>
+</body>
+</html>
