@@ -4,7 +4,7 @@
     pip install python-pptx
     python docs/presentation/build_deck.py                        # rebuild from img/ and NUMBERS
     python docs/presentation/build_deck.py --refresh-images       # copy the pictures again from outputs/
-    python docs/presentation/build_deck.py --panel-shot shot.png  # put a control-panel screenshot on slide 7
+    python docs/presentation/build_deck.py --panel-shot shot.png  # put a control-panel screenshot on slide 8
 
 Every number on the slides is in NUMBERS below: change one (e.g. after the final exam) and
 rebuild. The spoken script and the time for each slide are in its speaker notes
@@ -42,8 +42,12 @@ NUMBERS = {
     "episodes": "257", "frames": "169,675", "minutes": "94",
     # first model (ACT, 40k steps, session 1): hand trials with `so try` -> journal/eval.csv
     "trials": "3/7",
-    # first automatic-retry tests with that model -> journal/demo.csv (16:10-16:21)
+    # first automatic-retry tests with that model -> journal/demo.csv (16:10-16:21); notes only
     "retry_ok": "4/7", "retry_saved": "3",
+    # final model, 22 Nov: every order of the 4 objects over the 4 taped places (battery straight), team's test page
+    "final": "24/24",
+    # clutter test, 22 Nov (outputs/demo/test video trash/test.mp4): objects on the mat besides the battery
+    "clutter_others": "14",
     # the demo model
     "params": "51.6M", "steps": "100,000", "steps_short": "100k", "gpu": "RTX 5090",
     # our own vision check -> journal/vision-report.md
@@ -67,12 +71,18 @@ IMAGES = {
     "check_gripper.jpg": "outputs/vision/frames/ds_af51284a6c/ep0209_f0288_in_gripper.jpg",
 }
 PANEL = "panel.jpg"  # written by --panel-shot
+# Stills of the clutter test (22 Nov 2026), from outputs/demo/test video trash/test.mp4 (overhead camera on
+# the left half, wrist camera on the right): kept as they are in img/, --refresh-images does not touch them.
+# trash_end_rest.jpg is the overhead half at 32.5 s: battery in the box, arm back at rest.
+FIXED = ["trash_start.jpg", "trash_grip_wrist.jpg", "trash_end_rest.jpg"]
 
-# where the battery is in the 640 x 480 photos (pixel centre, ring size) for the crimson rings
+# where the battery is in the photos (pixel centre, ring half-size) for the crimson rings
 BATTERY = {
     "scene_start.jpg": ((451, 360), (46, 62)),
     "scene_end.jpg": ((71, 285), (34, 46)),
     "grip_only_wrong.jpg": ((473, 326), (34, 34)),
+    "trash_start.jpg": ((237, 334), (36, 50)),
+    "trash_end_rest.jpg": ((78, 345), (42, 36)),
 }
 
 # ---------------------------------------------------------------- look
@@ -273,9 +283,13 @@ def photo(slide, name, x, y, w=None, h=None, alt="", radius=0.12):
 
 
 def ring(slide, pic, name, color=CRIMSON, width=3.0):
-    """A crimson ring around the battery in a 640 x 480 photo placed as `pic`."""
+    """A crimson ring around the battery in the photo `name`, placed on the slide as `pic`."""
+    from PIL import Image
+
     (cx, cy), (rw, rh) = BATTERY[name]
-    sx, sy = pic.width / 640, pic.height / 480
+    with Image.open(IMG / name) as img:
+        px_w, px_h = img.size
+    sx, sy = pic.width / px_w, pic.height / px_h
     s = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(int(pic.left + (cx - rw) * sx)), Emu(int(pic.top + (cy - rh) * sy)),
                                Emu(int(2 * rw * sx)), Emu(int(2 * rh * sy)))
     s.fill.background()
@@ -379,15 +393,44 @@ def build(panel_available: bool) -> Presentation:
     text(s, M, 5.55, 12.1, 0.5, [[("Why: ", {"color": CRIMSON, "bold": True}),
                                     ("batteries in mixed waste start fires in trucks and sorting plants.", {})]], size=22)
     text(s, M, 6.15, 12.1, 0.4, "On the mat with it: a rubber duck, a toy car, a TNT cube.", size=16, color=MUTED)
-    notes(s, "[0:35 | total 0:50]\n"
-             "Why batteries? A battery that ends up in mixed waste can be crushed in a garbage truck or a sorting "
-             "plant and start a fire. Picking them out by hand is slow and dull work. So this is our task: on a mat "
-             "with a rubber duck, a toy car and a TNT cube, the arm has to pick the one thing that matters, the "
-             "battery, and drop it into its own box. It learns this only from our demonstrations; nothing is "
-             "programmed by hand.\n"
+    notes(s, "[0:30 | total 0:45]\n"
+             "Why batteries? A battery in mixed waste can be crushed in a garbage truck or a sorting plant and start "
+             "a fire. So this is our task: among a rubber duck, a toy car and a TNT cube, the arm picks the one thing "
+             "that matters, the battery, and drops it into its own box. It learns this only from our "
+             "demonstrations; nothing is programmed by hand.\n"
              "[Background, if asked: later recordings also had a yellow cube, a tape roll and a pen on the mat.]")
 
-    # 3 -- data ---------------------------------------------------------------------------------
+    # 3 -- clutter test -------------------------------------------------------------------------
+    s = prs.slides.add_slide(content)
+    title(s, "Only the battery, even in a pile of junk")
+    big_h, small_w = 4.45, 2.75
+    pic = photo(s, "trash_start.jpg", M, 1.6, h=big_h,
+                alt=f"Clutter test start: the battery among {N['clutter_others']} other objects: five rubber ducks, "
+                    "a phone, scissors, a nail clipper, keys, a tape roll, a pen and three cubes")
+    ring(s, pic, "trash_start.jpg")
+    rx = M + pic.width / 914400 + 0.35
+    small_h = small_w * 0.75
+    shots = [("trash_grip_wrist.jpg", 1.6, "Gripped", "wrist camera, first run",
+              "Wrist camera: the battery held between the gripper jaws"),
+             ("trash_end_rest.jpg", 1.6 + big_h - small_h, "In the box", f"the other {N['clutter_others']} untouched",
+              "Clutter test end: the battery in the box, every other object where it was, the arm back at rest")]
+    for img, y, head, sub_text, alt in shots:
+        shot = photo(s, img, rx, y, w=small_w, alt=alt)
+        if img in BATTERY:
+            ring(s, shot, img, width=2.5)
+        lx = rx + small_w + 0.3
+        text(s, lx, y + small_h / 2 - 0.5, 13.333 - M - lx, 0.45, head, size=22, bold=True)
+        text(s, lx, y + small_h / 2 - 0.02, 13.333 - M - lx, 0.7, sub_text, size=15, color=MUTED)
+    text(s, M, 6.2, 13.333 - 2 * M, 0.45,
+         [[(N["clutter_others"], {"bold": True, "color": CRIMSON}), (" other objects on the mat  ·  battery picked ", {}),
+           ("first try", {"bold": True, "color": CRIMSON})]], size=20, name="Clutter caption")
+    notes(s, "[0:20 | total 1:05]\n"
+             f"Then we made it hard: the battery plus {N['clutter_others']} other things on the mat, five rubber "
+             "ducks, a phone, scissors, keys, a pen, cubes. First run: the arm went straight for the battery, gripped "
+             "it, that is the wrist camera, and dropped it in the box. Nothing else moved.\n"
+             "[Video: outputs/demo/test video trash/test.mp4, 22 Nov 2026, recorded by so demo --record-video.]")
+
+    # 4 -- data ---------------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, f"{N['episodes']} demonstrations, aimed at our failures")
     cards = [("1", "Session 1", N["s1_episodes"], SNOW, "demonstrations", "objects shuffled in a balanced order"),
@@ -411,17 +454,16 @@ def build(panel_available: bool) -> Presentation:
            (N["frames"], {"size": 34, "bold": True, "color": CRIMSON}), ("  frames   ·   ≈ ", {}),
            (N["minutes"], {"size": 34, "bold": True, "color": CRIMSON}), ("  minutes of demonstrations", {})]],
          size=22, anchor=MSO_ANCHOR.MIDDLE, name="Total")
-    notes(s, "[0:50 | total 1:40]\n"
-             f"Data was our main lever. Session one: {N['s1_episodes']} demonstrations, with the objects shuffled "
-             "in a balanced order, so the arm cannot just memorise one layout. We trained a first model and tested "
-             f"it by hand: {said(N['trials'])}. We wrote down every failure: a battery turned a little and the arm did not "
-             "even try; grasps too low or at the very top got stuck; anything moved and it was lost. So session two "
-             f"aimed exactly there: {N['s2_episodes']} more demonstrations with the battery turned 20 degrees left and "
-             "right and moved 2 centimetres, while keeping about 80 percent normal placements, so it does not forget "
-             f"what it already knew. In total {N['episodes']} demonstrations, about {N['minutes']} minutes of us "
-             "driving the arm.")
+    notes(s, "[0:45 | total 1:50]\n"
+             f"How did it get there? Data. Session one: {N['s1_episodes']} demonstrations, objects shuffled in a "
+             "balanced order so the arm cannot memorise one layout. A first model got "
+             f"{said(N['trials'])} by hand, and every failure got a note: battery turned, no attempt; grasp too low "
+             "or at the very top, stuck; anything moved, lost. So session two aimed exactly there: "
+             f"{N['s2_episodes']} demonstrations with the battery turned 20 degrees and moved 2 centimetres, keeping "
+             "about 80 percent normal placements so it does not forget what it knew. In total "
+             f"{N['episodes']} demonstrations, about {N['minutes']} minutes of us driving the arm.")
 
-    # 4 -- the policy ---------------------------------------------------------------------------
+    # 5 -- the policy ---------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, f"ACT: {N['steps']} steps on an {N['gpu']}")
     photo(s, "scene_carry.jpg", M, 1.6, w=3.6, alt="Overhead camera view while the arm carries the battery to the box")
@@ -435,13 +477,13 @@ def build(panel_available: bool) -> Presentation:
     stat(s, 8.6, 1.6, 4.1, N["params"], "parameters in the ACT policy", label_h=0.45)
     stat(s, 8.6, 3.3, 4.1, N["steps_short"], f"training steps on an {N['gpu']}", color=CRIMSON, label_h=0.45)
     stat(s, 8.6, 5.0, 4.1, "2", "cameras: overhead + wrist, 30 fps", label_h=0.45)
-    notes(s, "[0:30 | total 2:10]\n"
+    notes(s, "[0:30 | total 2:20]\n"
              f"The policy is ACT, Action Chunking with Transformers: {N['params'].replace('M', ' million')} parameters, "
              "looking through two cameras, one above the table and one on the wrist. We trained it for "
              f"{N['steps']} steps on an {N['gpu']} in the cloud through SenseCraft, and that is the model you will "
              "see in the demo.")
 
-    # 5 -- closed loop ----------------------------------------------------------------------------
+    # 6 -- closed loop ----------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "If it fails, it tries again — hands off")
     steps = [("1", "Run the policy", "ACT, up to 40 s"), ("2", "Back to the start", "the same pose every run"),
@@ -472,14 +514,14 @@ def build(panel_available: bool) -> Presentation:
          [[("First test: ", {"color": CRIMSON, "bold": True}), ("the gripper alone said “success”.", {"bold": True})],
           [("The camera shows the battery still in the gripper. That is why we check with vision.",
             {"size": 18, "color": MUTED})]], size=22, after=8, anchor=MSO_ANCHOR.MIDDLE)
-    notes(s, "[0:45 | total 2:55]\n"
+    notes(s, "[0:45 | total 3:05]\n"
              "The demo is five attempts with nobody touching the robot. So we closed the loop. The policy runs; the "
              "arm goes back exactly to its start pose; then we check the result. Battery in the box: success. Still "
              "on the mat: the robot simply tries again, up to three runs per attempt. Why a camera? In our first "
              "test the gripper-only check said success. This photo was taken at that moment: the battery is still "
              "in the gripper. The gripper alone cannot see the box.")
 
-    # 6 -- our own vision check ---------------------------------------------------------------------
+    # 7 -- our own vision check ---------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Our own vision model checks the box")
     text(s, M, 1.6, 5.6, 0.4, "Its answers on recordings it never saw", size=16, color=MUTED)
@@ -514,20 +556,18 @@ def build(panel_available: bool) -> Presentation:
          label_h=0.6)
     text(s, rx, 5.95, rw, 0.7, f"{N['vis_frames']} labelled frames, trained in {N['vis_minutes']} min on the laptop. "
                                "One .env line switches to ChatGPT or Claude.", size=16)
-    notes(s, "[0:50 | total 3:45]\n"
+    notes(s, "[0:45 | total 3:50]\n"
              "We first let ChatGPT check the photo, but the demo should not depend on the venue Wi-Fi. So we "
-             "trained our own vision model, on this laptop. The trick: no hand labelling. The gripper signal in "
-             "every recording says when the battery was grabbed and let go: before the grab it is on the mat, while "
-             f"held it is in the gripper, after the release it is in the box. {N['vis_frames']} labelled frames for "
-             f"free; training took {N['vis_minutes']} minutes. On {N['vis_unseen_eps']} recordings it never saw it is "
-             f"right {N['vis_acc'].replace('%', ' percent')} of the time and never says 'in the box' when it is not. "
-             f"On real photos from our demo runs: {said(N['vis_real'])} with no hands in view, including that gripper "
-             f"case. {N['vis_ms'].replace('ms', 'milliseconds')} per photo, offline. One line in .env switches to "
-             "ChatGPT or Claude.\n"
+             "trained our own vision model on this laptop, with no hand labelling: the gripper signal says when the "
+             "battery was grabbed and let go. Before, it is on the mat; while held, in the gripper; after, in the "
+             f"box. {N['vis_frames']} frames for free, {N['vis_minutes']} minutes of training. On "
+             f"{N['vis_unseen_eps']} recordings it never saw: {N['vis_acc'].replace('%', ' percent')} right, never a "
+             f"wrong 'in the box'. Real demo photos without hands: {said(N['vis_real'])}. "
+             f"{N['vis_ms'].replace('ms', 'milliseconds')}, offline. One .env line switches to ChatGPT or Claude.\n"
              f"[If asked: with a person's hand in the picture it answered {said(N['vis_real_hands'])} right; when "
              "unsure it falls back to the gripper reading. Details: journal/vision-report.md]")
 
-    # 7 -- built to be repeated -----------------------------------------------------------------------
+    # 8 -- built to be repeated -----------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Built to be repeated — and to demo")
     if panel_available:
@@ -552,7 +592,7 @@ def build(panel_available: bool) -> Presentation:
         badge(s, 8.45, y, 0.5, str(i + 1), size=18)
         text(s, 9.15, y - 0.02, 13.333 - M - 9.15, 0.45, head, size=20, bold=True)
         text(s, 9.15, y + 0.45, 13.333 - M - 9.15, 0.8, body, size=16, color=MUTED)
-    notes(s, "[0:25 | total 4:10]\n"
+    notes(s, "[0:25 | total 4:15]\n"
              "Everything is reproducible. Our 'so' helper wraps the official LeRobot commands and writes every "
              "command we ran into the repository's journal; the tests run on Ubuntu, macOS and Windows in CI. And for "
              "today we built a small control panel: the demo runs from a browser, and you can see every check as it "
@@ -560,35 +600,39 @@ def build(panel_available: bool) -> Presentation:
              "(Team: before the jury round, publish the dataset on Hugging Face. CrimsonSnowLLC/battery-sample is "
              "still private; public gives the +3 bonus. Only then say: 'and our dataset is public on Hugging Face'.)")
 
-    # 8 -- results and live demo ------------------------------------------------------------------------
+    # 9 -- results and live demo ------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Live now: five attempts, hands off")
-    rows = [(N["trials"], SNOW, "First model, hand trials", f"ACT 40k steps · {N['s1_episodes']} demonstrations"),
-            (N["retry_ok"], CRIMSON, "With automatic retries",
-             f"{N['retry_saved']} saved by a retry · small first test")]
-    for i, (big, color, head, sub_text) in enumerate(rows):
-        y = 1.6 + i * 1.75
-        card(s, M, y, 5.8, 1.55, name=f"{head} card")
-        text(s, M + 0.3, y, 1.75, 1.55, [[(big, {"size": 44, "bold": True, "color": color})]],
-             anchor=MSO_ANCHOR.MIDDLE, name=f"{head} number")
-        text(s, M + 2.15, y + 0.33, 3.5, 0.45, head, size=19, bold=True)
-        text(s, M + 2.15, y + 0.8, 3.5, 0.55, sub_text, size=15, color=MUTED)
-    card(s, M, 5.1, 5.8, 1.5, fill=CARD_HI, line=(CRIMSON, 2), name="Today card")
-    text(s, M + 0.3, 5.1, 5.3, 1.5, [[("Today", {"size": 15, "bold": True, "color": CRIMSON})],
-                                    [(f"{N['episodes']} demonstrations · ACT {N['steps_short']} steps · "
-                                      "our own vision check", {"size": 19, "bold": True})]],
-         anchor=MSO_ANCHOR.MIDDLE, after=4)
+    card(s, M, 1.6, 5.8, 2.6, name="Before and after card")
+    text(s, M + 0.3, 1.85, 1.6, 0.85, [[(N["trials"], {"size": 44, "bold": True, "color": MUTED})]], name="Before number")
+    text(s, M + 0.3, 2.75, 1.6, 1.0, ["first model,", "by hand"], size=15, color=MUTED, name="Before label")
+    arrow(s, M + 1.85, 2.3, M + 2.5, 2.3, color=CRIMSON, width=3.5, name="Before to after")
+    text(s, M + 2.7, 1.7, 3.0, 1.15, [[(N["final"], {"size": 66, "bold": True, "color": CRIMSON})]], name="After number")
+    text(s, M + 2.7, 2.85, 2.95, 1.2, ["final model: all 24 orders", "of 4 objects on 4 places"], size=16,
+         name="After label")
+    card(s, M, 4.4, 5.8, 1.05, name="Clutter card")
+    text(s, M + 0.3, 4.4, 1.9, 1.05, [[("1st try", {"size": 30, "bold": True, "color": SNOW})]],
+         anchor=MSO_ANCHOR.MIDDLE, name="Clutter number")
+    text(s, M + 2.3, 4.4, 3.35, 1.05, f"clutter test: the battery among {N['clutter_others']} other objects",
+         size=16, color=MUTED, anchor=MSO_ANCHOR.MIDDLE)
+    card(s, M, 5.65, 5.8, 0.95, fill=CARD_HI, line=(CRIMSON, 2), name="Today card")
+    text(s, M + 0.3, 5.65, 5.3, 0.95, [[("Today  ", {"bold": True, "color": CRIMSON}),
+                                       (f"ACT {N['steps_short']} steps · {N['episodes']} demonstrations · "
+                                        "our own vision check", {"bold": True})]],
+         size=16, anchor=MSO_ANCHOR.MIDDLE)
     pw = 5.5
     pic = photo(s, "scene_end.jpg", 13.333 - M - pw, 1.6, w=pw, alt="The goal: the battery in the box, the arm back at rest")
     ring(s, pic, "scene_end.jpg")
     below = 1.6 + pic.height / 914400
     text(s, 13.333 - M - pw, below + 0.12, pw, 0.45, "Thank you!", size=24, bold=True, color=CRIMSON)
     text(s, 13.333 - M - pw, below + 0.58, pw, 0.35, REPO, size=16, color=SNOW)
-    notes(s, "[0:30 | total 4:40]\n"
-             f"Where we stand: the first model managed {said(N['trials'])} in hand trials. With automatic retries, our "
-             f"first tests reached {said(N['retry_ok'])} attempts, {N['retry_saved']} of them saved by a retry; a small sample, "
-             f"with that old model. Now the new one: {N['episodes']} demonstrations, {N['steps']} steps, plus our own "
-             "vision check. Let's see it live: five attempts, hands off. Thank you!")
+    notes(s, "[0:25 | total 4:40]\n"
+             f"Where we stand: our first model got {said(N['trials'])} by hand. The final model: "
+             f"{said(N['final'])}, every order of the four objects over the four places. And in the clutter test, "
+             "first try. Now live: five attempts, hands off. Thank you!\n"
+             f"[If asked: the {N['final'].split('/')[1]} arrangements had the battery straight. Our first "
+             f"automatic-retry tests with the old model reached {said(N['retry_ok'])} attempts, {N['retry_saved']} "
+             "of them saved by a retry.]")
     return prs
 
 
@@ -622,14 +666,14 @@ def refresh_images() -> None:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--refresh-images", action="store_true", help="copy the pictures again from outputs/ (git-ignored)")
-    p.add_argument("--panel-shot", type=Path, help="screenshot of `so panel` for slide 7")
+    p.add_argument("--panel-shot", type=Path, help="screenshot of `so panel` for slide 8")
     p.add_argument("--out", type=Path, default=OUT)
     args = p.parse_args(argv)
     if args.refresh_images:
         refresh_images()
     if args.panel_shot:
         _save_jpeg(args.panel_shot, IMG / PANEL)
-    missing = [n for n in IMAGES if not (IMG / n).is_file()]
+    missing = [n for n in [*IMAGES, *FIXED] if not (IMG / n).is_file()]
     if missing:
         raise SystemExit(f"missing pictures in {IMG}: {missing} (run with --refresh-images on the team laptop)")
     prs = build(panel_available=(IMG / PANEL).is_file())

@@ -1,0 +1,320 @@
+<title>Battery 24 Arrangements</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: the team's recording-sheet look. The current arrangement large with two result buttons,
+   a score line, then all 24 in a list that can be marked in any order. */
+:root {
+  --bg: #f1f5f2; --surface: #ffffff; --ink: #14201b; --muted: #55645d; --rule: #d3dcd6; --soft: #e6ede9;
+  --stick: #b08550; --tnt: #d6336c; --duck: #f2c200; --car: #2f6fde;
+  --on-dark: #ffffff; --on-light: #1c1a05; --go: #1c6a53; --go-bg: #dcefe6; --fail: #b3261e; --fail-bg: #f8e1df;
+  --warn-bg: #fbf2dd; --warn-rule: #d9b45a;
+  --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+    --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff;
+    --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --go-bg: #173328; --fail: #ff8a80; --fail-bg: #3a1c1a;
+    --warn-bg: #2a2413; --warn-rule: #8f7430;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+  --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff;
+  --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --go-bg: #173328; --fail: #ff8a80; --fail-bg: #3a1c1a;
+  --warn-bg: #2a2413; --warn-rule: #8f7430;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 52rem; margin: 0 auto; padding-block: 1.5rem 4rem; display: flex; flex-direction: column; gap: 1.6rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 700; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+p { margin: 0; max-width: 66ch; }
+section { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 1.2rem; border-bottom: 2px solid var(--ink); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--car); outline-offset: 2px; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+.status { font-family: var(--mono); font-size: 0.84rem; padding: 0.5rem 0.75rem; border-radius: 4px; background: var(--soft); color: var(--muted); }
+.status.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-rule); color: var(--ink); }
+.status.bad { background: var(--fail-bg); border-left: 4px solid var(--fail); color: var(--ink); }
+.score { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; font-family: var(--mono); font-size: 0.9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.score b { color: var(--ink); font-weight: 500; }
+.score .ok b { color: var(--go); } .score .no b { color: var(--fail); }
+.strip { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 3px; }
+.strip i { height: 0.8rem; border-radius: 2px; background: var(--soft); border: 1px solid var(--rule); }
+.strip i.ok { background: var(--go); border-color: var(--go); } .strip i.no { background: var(--fail); border-color: var(--fail); }
+
+.next { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.next-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.9rem; }
+.next-head .num { font-family: var(--display); font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.change { font-family: var(--display); font-size: clamp(1.15rem, 4.4vw, 1.5rem); font-weight: 700; line-height: 1.15; }
+.places { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }
+.place { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.slot { height: 6.5rem; border-radius: 5px; background: var(--soft); display: grid; place-items: center; overflow: hidden; }
+.place small { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: center; }
+.place.moved small { color: var(--ink); font-weight: 500; }
+.place.moved .slot { outline: 3px solid var(--ink); outline-offset: 2px; }
+.obj { border-radius: 5px; display: grid; place-items: center; text-align: center; font-family: var(--display); font-weight: 700;
+  font-size: clamp(0.85rem, 3.4vw, 1.1rem); width: 78%; height: 62%; padding: 0.2rem; overflow-wrap: anywhere; }
+.obj.D { background: var(--duck); color: var(--on-light); } .obj.C { background: var(--car); color: var(--on-dark); }
+.obj.T { background: var(--tnt); color: var(--on-dark); }
+.obj.B { background: var(--stick); color: var(--on-light); width: 30%; height: 76%; font-family: var(--mono); font-size: 0.95rem; grid-template-rows: 1fr 1fr; line-height: 1; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.btn { border: 0; border-radius: 5px; padding: 0.75rem 1.4rem; font-family: var(--display); font-size: 1.25rem; font-weight: 700; }
+.btn.ok { background: var(--go); color: var(--on-dark); } .btn.no { background: var(--fail); color: var(--on-dark); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.88rem; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 0.4rem; align-items: center; }
+.chip { width: 1.6rem; height: 1.6rem; border-radius: 3px; display: inline-grid; place-items: center; font: 500 0.78rem var(--mono); flex: none; }
+.chip.B { background: var(--stick); color: var(--on-light); } .chip.D { background: var(--duck); color: var(--on-light); }
+.chip.C { background: var(--car); color: var(--on-dark); } .chip.T { background: var(--tnt); color: var(--on-dark); }
+.chips { display: flex; gap: 4px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.tabs button { font: 500 0.88rem var(--mono); padding: 0.5rem 0.8rem; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 4px; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.listbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.row { display: grid; grid-template-columns: 2.4rem auto 1fr auto; gap: 0.6rem; align-items: center; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--rule); }
+.listbox > :last-child { border-bottom: 0; }
+.row .n { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.row .what { font-size: 0.92rem; min-width: 0; overflow-wrap: anywhere; }
+.row.isnext { background: var(--warn-bg); }
+.row.ok { background: var(--go-bg); } .row.no { background: var(--fail-bg); }
+.mark { display: flex; gap: 0.3rem; }
+.mark button { width: 2.3rem; height: 2.1rem; border-radius: 4px; border: 1px solid var(--rule); background: var(--surface); color: var(--muted); font-weight: 600; }
+.mark button.ok[aria-pressed="true"] { background: var(--go); border-color: var(--go); color: var(--on-dark); }
+.mark button.no[aria-pressed="true"] { background: var(--fail); border-color: var(--fail); color: var(--on-dark); }
+.mark button:disabled { opacity: 0.45; cursor: default; }
+@media (max-width: 34rem) { .row { grid-template-columns: 2.1rem 1fr auto; } .row .chips { display: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Team CrimsonSnow · SO-101 · stick straight on its tape</span>
+    <h1>Battery 24 Arrangements</h1>
+    <p>Every way to put the stick, the duck, the car and the TNT on the four taped places: 24 arrangements, the stick always straight on its tape, nothing turned or moved. Go through them in order (only two objects swap from one to the next) and mark each run ✓ or ✗. The marks are shared with everyone who opens this page.</p>
+    <div class="tabs" id="tabs" aria-label="Which arrangements"></div>
+  </header>
+
+  <section aria-labelledby="h-next">
+    <h2 id="h-next">Now</h2>
+    <div id="status" class="status" role="status" aria-live="polite">Loading saved results…</div>
+    <div class="score" id="score"></div>
+    <div class="strip" id="strip" aria-hidden="true"></div>
+    <div class="next">
+      <div class="next-head">
+        <span class="eyebrow">Arrangement</span>
+        <span class="num" id="next-num">1</span>
+        <span class="hint" id="next-where"></span>
+      </div>
+      <div class="change" id="next-change"></div>
+      <div class="places" id="next-places"></div>
+      <div class="actions">
+        <button type="button" class="btn ok" id="btn-ok" disabled>✓ Worked</button>
+        <button type="button" class="btn no" id="btn-no" disabled>✗ Failed</button>
+        <span class="hint">Places 1 to 4 from left to right as seen from behind the arm (tape 1 is next to the box).</span>
+      </div>
+    </div>
+    <div class="legend" aria-label="Legend">
+      <span><i class="chip B">B</i>battery stick, the one to pick</span><span><i class="chip D">D</i>yellow duck</span><span><i class="chip C">C</i>blue car</span><span><i class="chip T">T</i>pink TNT</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-all">
+    <h2 id="h-all">The list</h2>
+    <p class="hint">Tap ✓ or ✗ on any row to mark it; tap the same button again to clear it.</p>
+    <div class="listbox" id="list"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // All 24 orders of the four objects on the four places, in a cycle where two neighbouring objects swap
+  // from one arrangement to the next. The stick is at each place 6 times.
+  var PERMS = "DCTB DCBT DBCT BDCT BDTC DBTC DTBC DTCB TDCB TDBC TBDC BTDC BTCD TBCD TCBD TCDB CTDB CTBD CBTD BCTD BCDT CBDT CDBT CDTB".split(" ");
+  var NAME = { B: "Stick", D: "Duck", C: "Car", T: "TNT" };
+  var FULL = { B: "battery stick", D: "yellow duck", C: "blue car", T: "pink TNT" };
+  var THE = { B: "the stick", D: "the duck", C: "the car", T: "the TNT" };
+  var EP = PERMS.map(function (code, j) { return { n: j + 1, code: code, place: code.indexOf("B") }; });
+  var TOTAL = EP.length;
+  // Views: all 24, or only the 12 with the stick on tape 2 or 3 (still one swap from one to the next).
+  var VIEWS = [
+    { id: "all", label: "All 24", items: EP },
+    { id: "tapes-2-3", label: "Stick on tape 2 or 3 · 12", items: EP.filter(function (e) { return e.place === 1 || e.place === 2; }) }
+  ];
+  var view = VIEWS[0];
+  function pickView() { var h = (location.hash || "").slice(1); view = VIEWS.filter(function (v) { return v.id === h; })[0] || VIEWS[0]; }
+  function items() { return view.items; }
+
+  function describe(e) { var out = []; for (var p = 0; p < 4; p++) out.push("place " + (p + 1) + " " + FULL[e.code.charAt(p)]); return out.join(", "); }
+  function changeFor(e) {
+    var all = { text: "Set up all four as shown, the stick straight on its tape.", moved: [0, 1, 2, 3] };
+    var list = items(), idx = list.indexOf(e);
+    if (idx <= 0) return all;
+    var before = list[idx - 1], prev = before.code, moved = [];
+    for (var i = 0; i < 4; i++) if (prev.charAt(i) !== e.code.charAt(i)) moved.push(i);
+    if (moved.length !== 2) return all;
+    var a = prev.charAt(moved[0]), b = prev.charAt(moved[1]);
+    return { text: "From arrangement " + before.n + ": swap " + THE[a] + " and " + THE[b] + " (places " + (moved[0] + 1) + " and " + (moved[1] + 1) + ").", moved: moved };
+  }
+  function docId(k) { return "a" + ("0" + k).slice(-2); }
+
+  var res = {}, pending = {}, mode = "loading", col = null;
+  var LOCAL_KEY = "battery-24-arrangements";
+  var el = function (id) { return document.getElementById(id); };
+  function canWrite() { return mode === "shared" || mode === "local"; }
+  function setStatus(text, kind) { var st = el("status"); st.textContent = text; st.className = "status" + (kind ? " " + kind : ""); }
+  function current() { var list = items(); for (var i = 0; i < list.length; i++) if (!res[list[i].n]) return list[i].n; return 0; }
+
+  function chipRow(code) {
+    var chips = document.createElement("span"); chips.className = "chips";
+    for (var p = 0; p < 4; p++) {
+      var c = code.charAt(p), chip = document.createElement("i");
+      chip.className = "chip " + c; chip.textContent = c; chip.title = "Place " + (p + 1) + ": " + FULL[c];
+      chips.appendChild(chip);
+    }
+    return chips;
+  }
+
+  function renderScore() {
+    var ok = 0, no = 0, perPlace = [[0, 0], [0, 0], [0, 0], [0, 0]], list = items();
+    list.forEach(function (e) {
+      if (res[e.n] === "ok") { ok++; perPlace[e.place][0]++; }
+      if (res[e.n] === "no") { no++; perPlace[e.place][1]++; }
+    });
+    var html = "<span><b>" + (ok + no) + "</b> of " + list.length + " done</span><span class=\"ok\">worked <b>" + ok + "</b></span><span class=\"no\">failed <b>" + no + "</b></span>";
+    for (var p = 0; p < 4; p++) if (perPlace[p][0] + perPlace[p][1]) html += "<span>stick at " + (p + 1) + ": <b>" + perPlace[p][0] + "/" + (perPlace[p][0] + perPlace[p][1]) + "</b></span>";
+    el("score").innerHTML = html;
+    var strip = el("strip"); strip.textContent = "";
+    strip.style.gridTemplateColumns = "repeat(" + list.length + ", minmax(0, 1fr))";
+    list.forEach(function (e) { var i = document.createElement("i"); i.className = res[e.n] || ""; strip.appendChild(i); });
+  }
+
+  function renderNext() {
+    var k = current(), places = el("next-places");
+    places.textContent = "";
+    if (!k) {
+      el("next-num").textContent = "Done"; el("next-where").textContent = "All " + items().length + " in this list are marked.";
+      el("next-change").textContent = ""; el("btn-ok").disabled = el("btn-no").disabled = true; return;
+    }
+    var e = EP[k - 1], ch = changeFor(e);
+    el("next-num").textContent = k;
+    el("next-where").textContent = (items().indexOf(e) + 1) + " of " + items().length + " · stick at place " + (e.place + 1) + ", straight";
+    el("next-change").textContent = ch.text;
+    for (var p = 0; p < 4; p++) {
+      var c = e.code.charAt(p), isMoved = ch.moved.length < 4 && ch.moved.indexOf(p) >= 0;
+      var box = document.createElement("div"); box.className = "place" + (isMoved ? " moved" : "");
+      var slot = document.createElement("div"); slot.className = "slot";
+      var obj = document.createElement("div"); obj.className = "obj " + c;
+      if (c === "B") obj.innerHTML = "<span>−</span><span>+</span>"; else obj.textContent = NAME[c];
+      slot.appendChild(obj);
+      var lab = document.createElement("small"); lab.textContent = "place " + (p + 1) + (isMoved ? " · moved" : "");
+      box.appendChild(slot); box.appendChild(lab); places.appendChild(box);
+    }
+    places.setAttribute("role", "img"); places.setAttribute("aria-label", "Arrangement " + k + ": " + describe(e));
+    el("btn-ok").disabled = el("btn-no").disabled = !canWrite() || !!pending[k];
+  }
+
+  function renderList() {
+    var list = el("list"), k = current();
+    list.textContent = "";
+    items().forEach(function (e) {
+      var row = document.createElement("div");
+      row.className = "row" + (res[e.n] ? " " + res[e.n] : "") + (e.n === k ? " isnext" : "");
+      var num = document.createElement("span"); num.className = "n"; num.textContent = e.n;
+      var chips = chipRow(e.code); chips.setAttribute("role", "img"); chips.setAttribute("aria-label", describe(e));
+      var what = document.createElement("span"); what.className = "what"; what.textContent = "Stick at place " + (e.place + 1);
+      var marks = document.createElement("span"); marks.className = "mark";
+      [["ok", "✓", "worked"], ["no", "✗", "failed"]].forEach(function (b) {
+        var btn = document.createElement("button"); btn.type = "button"; btn.className = b[0]; btn.textContent = b[1];
+        btn.setAttribute("aria-pressed", res[e.n] === b[0] ? "true" : "false");
+        btn.setAttribute("aria-label", "Arrangement " + e.n + " " + b[2]);
+        btn.disabled = !canWrite() || !!pending[e.n];
+        btn.addEventListener("click", function () { mark(e.n, res[e.n] === b[0] ? null : b[0]); });
+        marks.appendChild(btn);
+      });
+      row.appendChild(num); row.appendChild(chips); row.appendChild(what); row.appendChild(marks);
+      list.appendChild(row);
+    });
+  }
+
+  function renderTabs() {
+    var tabs = el("tabs"); tabs.textContent = "";
+    VIEWS.forEach(function (v) {
+      var btn = document.createElement("button"); btn.type = "button"; btn.id = "view-" + v.id; btn.textContent = v.label;
+      btn.setAttribute("aria-pressed", v === view ? "true" : "false");
+      btn.addEventListener("click", function () { location.hash = v.id === "all" ? "" : v.id; pickView(); renderAll(); });
+      tabs.appendChild(btn);
+    });
+  }
+  function renderAll() { renderTabs(); renderScore(); renderNext(); renderList(); }
+  window.addEventListener("hashchange", function () { pickView(); renderAll(); });
+  pickView();
+
+  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(res)); } catch (e) {} }
+  function loadLocal() { try { var o = JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}") || {}; for (var k in o) if (o[k] === "ok" || o[k] === "no") res[parseInt(k, 10)] = o[k]; } catch (e) {} }
+
+  function mark(k, value) {
+    if (!canWrite() || pending[k]) { renderAll(); return; }
+    var before = res[k];
+    if (value) res[k] = value; else delete res[k];
+    if (mode === "local") { saveLocal(); renderAll(); return; }
+    pending[k] = true; renderAll(); setStatus("Saving arrangement " + k + "…");
+    var ref = col.doc(docId(k));
+    var write = value ? ref.set({ result: value, arrangement: k, at: new Date().toISOString() }) : ref["delete"]();
+    write.then(function () { delete pending[k]; setStatus("Saved. Everyone who opens this page sees the same results."); renderAll(); },
+      function (err) {
+        delete pending[k]; if (before) res[k] = before; else delete res[k];
+        var code = err && err.code;
+        if (code === "invalid_argument" || code === "not_granted" || code === "revoked") {
+          mode = "readonly"; setStatus("You can see this page but not mark it. Ask the owner to share it with you as a contributor.", "bad");
+        } else {
+          setStatus("Arrangement " + k + " was not saved (connection problem). Mark it again.", "bad");
+        }
+        renderAll();
+      });
+  }
+
+  el("btn-ok").addEventListener("click", function () { var k = current(); if (k) mark(k, "ok"); });
+  el("btn-no").addEventListener("click", function () { var k = current(); if (k) mark(k, "no"); });
+  renderAll();
+
+  function startLocal() {
+    mode = "local"; loadLocal();
+    setStatus("Shared saving is not available in this view. Results are kept in this browser only.", "warn");
+    renderAll();
+  }
+
+  var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("db") : Promise.resolve(null);
+  use.then(function (db) {
+    if (!db) { startLocal(); return; }
+    col = db.collection("arrangements24");
+    var slow = setTimeout(function () { if (mode === "loading") setStatus("The saved results cannot be reached yet. Still trying…", "warn"); }, 10000);
+    col.onSnapshot(function (snap) {
+      var fresh = {};
+      snap.docs.forEach(function (d) {
+        var k = parseInt(String(d.id).slice(1), 10), body = d.exists ? d.data() : null;
+        if (k >= 1 && k <= TOTAL && body && (body.result === "ok" || body.result === "no")) fresh[k] = body.result;
+      });
+      for (var p in pending) { if (res[p]) fresh[p] = res[p]; else delete fresh[p]; }
+      res = fresh;
+      if (mode === "loading") { clearTimeout(slow); mode = "shared"; setStatus("Results are saved in this page for everyone who opens it."); }
+      renderAll();
+    }, function () {
+      clearTimeout(slow);
+      if (mode === "loading") { startLocal(); return; }
+      mode = "readonly"; setStatus("Lost the connection to the saved results. Reload the page to continue.", "bad"); renderAll();
+    });
+  }, function () { startLocal(); });
+})();
+</script>

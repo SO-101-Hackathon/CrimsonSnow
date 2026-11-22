@@ -563,6 +563,8 @@ def cmd_demo(args, cfg, state):
         ours = [f"--tries={args.tries}", f"--attempts={args.attempts}", f"--check={args.check}", f"--label={label}"]
         if args.model:
             ours.append(f"--model={args.model}")
+    if getattr(args, "record_video", False):
+        ours.append("--record-video")
     if roles.get("scene"):
         ours.append(f"--scene-camera={roles['scene']}")
     if roles.get("wrist"):
@@ -803,6 +805,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--rename", help="map our camera names to the policy's, e.g. top=front,wrist=gripper "
                                      "(default: matched by role)")
     sp.add_argument("--task")
+    sp.add_argument("--record-video", action="store_true",
+                    help="film the whole test (overhead + wrist camera) to outputs/demo/<session>/test.mp4")
 
     sp = add("try", cmd_demo, "find failure points: run the policy attempt by attempt, you mark each s or f "
                               "(no automatic checks or retries; logged for `so eval --summary`)")
@@ -816,6 +820,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--seconds", type=float, default=40, help="time limit per run (default 40)")
     sp.add_argument("--rename", help="map our camera names to the policy's, e.g. top=front,wrist=gripper")
     sp.add_argument("--task")
+    sp.add_argument("--record-video", action="store_true",
+                    help="film the whole session (overhead + wrist camera) to outputs/demo/<session>/test.mp4")
 
     sp = add("panel", cmd_panel, "local web control panel for the demo: start attempts, stop the arm, scoreboard, "
                                  "check photos (opens the browser)")

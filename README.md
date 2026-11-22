@@ -138,7 +138,10 @@ RETRY_CHECK=local      # local (our model, offline) | openai (ChatGPT) | claude 
   S / F / X to mark manual trials;
 - the scoreboard (attempt tiles, "retry saved it", the streak towards five in a row), the photo the check
   looked at with its verdict, the live log, and the results per model from the journal;
-- a **jury view** with only the score and the last check (J key, or `/#jury`).
+- a **jury view** with only the score and the last check (J key, or `/#jury`);
+- a **Record the full test on video** switch: the whole session from the robot's own overhead and wrist
+  cameras, with each attempt and verdict written on top, saved as `outputs/demo/<session>/test.mp4`
+  (`so demo --record-video` does the same from the terminal).
 
 It runs the same `so` commands in the background, one at a time, answers only this computer unless
 started with `--host 0.0.0.0` (the printed link then carries an access token), needs nothing beyond

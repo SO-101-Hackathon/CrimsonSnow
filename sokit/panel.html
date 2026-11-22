@@ -261,6 +261,7 @@
         <option value="claude">Claude</option>
         <option value="grip">gripper only</option>
       </select></label>
+      <label class="check wide f-run"><input id="record" type="checkbox"> &#9679; Record the full test on video (overhead + wrist camera, saved as outputs/demo/&lt;session&gt;/test.mp4)</label>
       <label class="check f-teleop" hidden><input id="no-cams" type="checkbox"> without the camera window</label>
       <label class="check wide"><input id="dry" type="checkbox"> Dry run: print the command, move nothing</label>
     </div>
@@ -687,6 +688,7 @@ function request() {
     else if (v === "path") { req.source = "policy"; req.policy = $("policy").value; }
     else req.source = "last";
     req.seconds = $("seconds").value;
+    req.record_video = $("record").checked;
     if (cmd === "demo") { req.tries = $("tries").value; req.attempts = $("attempts").value; req.check = $("check").value; }
   }
   if (cmd === "teleop") req.no_cameras = $("no-cams").checked;

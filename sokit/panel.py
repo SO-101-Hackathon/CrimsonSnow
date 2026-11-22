@@ -198,6 +198,8 @@ def build_command(req: dict, *, mock: bool = False, mock_speed: float = 1.0, moc
                 flags.append(f"--check={check}")
         seconds = _number(req, "seconds", 40, 5, 600)
         flags.append(f"--seconds={seconds:g}")
+        if req.get("record_video") is True:
+            flags.append("--record-video")  # the whole test on video: outputs/demo/<session>/test.mp4
     elif cmd == "teleop" and req.get("no_cameras"):
         flags.append("--no-cameras")
     shown = " ".join(["so", *(["--dry-run"] if dry else []), cmd, *(_shown(f) for f in flags)])

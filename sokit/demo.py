@@ -552,6 +552,13 @@ class Demo:
         self.frames = FRAMES_DIR / dt.datetime.now().strftime("%Y%m%d_%H%M%S")
         self.failures = {ev.ENGINE_FAILED, ev.STRATEGY_FAILED, ev.STOPPED}
         self._lines: queue.Queue = queue.Queue()
+        self.video: TestVideo | None = None  # set by _session with --record-video
+
+    def _status(self, text: str) -> None:
+        """What the test video shows across the top (no-op without --record-video)."""
+        video = getattr(self, "video", None)
+        if video is not None:
+            video.status = text
 
     # -- small helpers --------------------------------------------------------
     def _read_stdin(self) -> None:
@@ -673,8 +680,10 @@ class Demo:
         result = Attempt(number)
         t0 = time.monotonic()
         for run_no in range(1, self.opts.tries + 1):
+            self._status(f"Attempt {number}  run {run_no}/{self.opts.tries}: arm running")
             run = self.run_once(number, run_no)
             result.runs.append(run)
+            self._status(f"Attempt {number}  run {run_no}: {'SUCCESS' if run.success else 'not done'} - {run.reason}")
             camera = (f"camera: {run.check.location.replace('_', ' ')}" if run.check.location
                       else f"camera: {run.check.error or 'not used'}")
             print(f"[demo]   run {run_no}: {run.seconds:.1f} s ({run.ended_by}) | grip: {run.check.grip} | {camera}"
@@ -700,11 +709,14 @@ class Demo:
         attempts: list[Attempt] = []
         while self.opts.attempts == 0 or len(attempts) < self.opts.attempts:
             n = len(attempts) + 1
+            ok_so_far = sum(a.success for a in attempts)
+            self._status(f"Attempt {n}: setting up   ({ok_so_far}/{len(attempts)} so far)")
             line = self.ask(f"\n[demo] Attempt {n}: put the battery on its place, then press Enter (q + Enter = finish)")
             if line is None or line.strip().lower() in ("q", "quit", "exit"):
                 break
             result = self.attempt(n)
             attempts.append(result)
+            self._status(f"Attempt {n}: {'SUCCESS' if result.success else 'FAILED'} in {len(result.runs)} run(s)")
             print(f"[demo] Attempt {n}: {'SUCCESS' if result.success else 'FAILED'} in {result.seconds:.0f} s"
                   f" ({len(result.runs)} run{'s' if len(result.runs) > 1 else ''})", flush=True)
         if attempts:
@@ -728,10 +740,13 @@ class Demo:
               "[try]   x = do not log this run, q = finish. Ctrl+C stops everything.", flush=True)
         results: list[tuple[str, str]] = []
         while True:
+            self._status(f"Trial {len(results) + 1}: setting up")
             line = self.ask(f"\n[try] Attempt {len(results) + 1}: set up the scene, then press Enter (q = finish)")
             if line is None or line.strip().lower() in ("q", "quit", "exit"):
                 break
+            self._status(f"Trial {len(results) + 1}: arm running")
             seconds, ended_by, grip = self._run_policy()
+            self._status(f"Trial {len(results) + 1}: waiting for your verdict")
             print(f"[try]   {seconds:.1f} s ({ended_by}), gripper: {GRIP_WORDS.get(grip, grip)}. "
                   "The arm is back at its start pose.", flush=True)
             while True:
@@ -763,6 +778,86 @@ GRIP_WORDS = {"held": "closed on something", "missed": "closed on nothing",
               "never_opened": "never opened", "unknown": "unclear"}
 
 
+class TestVideo:
+    """Films the whole session (`--record-video`) from the cameras the policy already uses, side by side,
+    with the attempt, the run and each verdict written across the top. One H.264 file per session.
+
+    Frames come from `read_latest()`, which peeks at the newest frame without taking it away from the
+    control loop (LeRobot 0.7.0 OpenCVCamera), so recording never slows the arm down."""
+
+    FPS = 15
+    TILE = (640, 480)
+    BANNER = 44
+
+    def __init__(self, cameras: dict, names: list[str], path: Path, fps: int = FPS):
+        self.cameras, self.names, self.path, self.fps = cameras, [n for n in names if n], path, fps
+        self.status = "starting"
+        self.frames = 0
+        self.error = ""
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._loop, name="test-video", daemon=True)
+
+    def start(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._thread.start()
+
+    def stop(self) -> Path | None:
+        self._stop.set()
+        self._thread.join(timeout=15)
+        return self.path if self.frames and self.path.is_file() else None
+
+    def _grab(self, name: str):
+        try:
+            return self.cameras[name].read_latest(max_age_ms=1000)
+        except Exception:  # noqa: BLE001 - a missing frame repeats the last one
+            return None
+
+    def _loop(self) -> None:
+        from fractions import Fraction
+
+        try:
+            import av
+            import cv2
+            import numpy as np
+
+            w, h = self.TILE
+            width, height = w * max(1, len(self.names)), h + self.BANNER
+            container = av.open(str(self.path), "w")
+            stream = container.add_stream("libx264", rate=self.fps)
+            stream.width, stream.height, stream.pix_fmt = width, height, "yuv420p"
+            stream.options = {"preset": "veryfast", "crf": "23"}
+            last: dict = {}
+            t0 = time.monotonic()
+            last_pts = -1
+            while not self._stop.is_set():
+                for name in self.names:
+                    frame = self._grab(name)
+                    if frame is not None:
+                        last[name] = frame
+                canvas = np.full((height, width, 3), 24, dtype=np.uint8)
+                for i, name in enumerate(self.names):
+                    if name in last:
+                        canvas[self.BANNER:, i * w:(i + 1) * w] = cv2.resize(last[name], (w, h))
+                elapsed = time.monotonic() - t0
+                text = f"CrimsonSnow  {int(elapsed // 60):02d}:{int(elapsed % 60):02d}   {self.status}"
+                cv2.putText(canvas, text.encode("ascii", "replace").decode(), (14, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+                pts = max(last_pts + 1, round(elapsed * self.fps))  # real time, even if a frame was late
+                video_frame = av.VideoFrame.from_ndarray(canvas, format="rgb24")
+                video_frame.pts, video_frame.time_base = pts, Fraction(1, self.fps)
+                for packet in stream.encode(video_frame):
+                    container.mux(packet)
+                last_pts = pts
+                self.frames += 1
+                self._stop.wait(max(0.0, (pts + 1) / self.fps - (time.monotonic() - t0)))
+            for packet in stream.encode():
+                container.mux(packet)
+            container.close()
+        except Exception as e:  # noqa: BLE001 - the demo goes on without a video
+            self.error = str(e)
+            print(f"[demo] the video recording stopped: {e}", flush=True)
+
+
 def _session(cfg, opts) -> int:
     from lerobot.rollout import LinkedEvent, RolloutController, RolloutEvent, build_rollout_context, create_strategy
     from lerobot.utils import init_logging
@@ -780,14 +875,27 @@ def _session(cfg, opts) -> int:
         controller = RolloutController(strategy, ctx, on_event=lambda event, _payload: events.put(event))
         serve = threading.Thread(target=controller.serve, name="rollout-serve", daemon=True)
         serve.start()
+        video = None
         try:
             session = Demo(controller, ctx, events, RolloutEvent, shutdown, opts)
+            if getattr(opts, "record_video", False):
+                video = TestVideo(session.robot.cameras, [session.scene_cam, session.wrist_cam],
+                                  session.frames / "test.mp4")
+                session.video = video
+                video.start()
+                print(f"[demo] Recording the whole test on video: {session.frames.relative_to(ROOT).as_posix()}/test.mp4",
+                      flush=True)
             session.manual_loop() if opts.manual else session.loop()
         except KeyboardInterrupt:
             print("\n[demo] stopping", flush=True)
         finally:
             controller.stop()
             serve.join(timeout=60)
+            if video is not None:
+                saved = video.stop()
+                if saved:
+                    print(f"[demo] Video saved: {saved.relative_to(ROOT).as_posix()} "
+                          f"({video.frames / video.fps:.0f} s)", flush=True)
     finally:
         strategy.teardown(ctx)  # returns to the start pose, then releases the motors
     return 1 if controller is None or controller.failed else 0
@@ -810,6 +918,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--scene-camera", help="camera that sees the whole table (default: by name, e.g. top)")
     p.add_argument("--wrist-camera", help="camera on the gripper (default: by name, e.g. wrist)")
     p.add_argument("--label", default="policy", help="name for the log")
+    p.add_argument("--record-video", action="store_true",
+                   help="film the whole session (overhead + wrist camera, status on top) to outputs/demo/<session>/test.mp4")
     return p
 
 

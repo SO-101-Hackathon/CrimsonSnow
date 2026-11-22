@@ -269,3 +269,585 @@ python \
 ```
 
 exit code 0 after 6s
+
+## 2026-11-21 22:29:49  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 3m42s
+
+## 2026-11-21 22:34:17  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 5m29s
+
+## 2026-11-21 22:40:09  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+## 2026-11-21 22:46:30  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 19s
+
+## 2026-11-21 22:47:31  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 18s
+
+## 2026-11-21 22:52:25  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 1m06s
+
+## 2026-11-21 22:53:36  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 52s
+
+## 2026-11-21 22:57:47  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 10m30s
+
+## 2026-11-21 23:10:29  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 5m41s
+
+## 2026-11-21 23:17:26  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=20 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m05s
+
+## 2026-11-21 23:18:35  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=20 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 3m43s
+
+## 2026-11-21 23:22:23  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=20 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=30 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 2m06s
+
+## 2026-11-21 23:25:13  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m40s
+
+## 2026-11-21 23:26:56  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m16s
+
+## 2026-11-21 23:31:02  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=24 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 5m26s
+
+## 2026-11-21 23:41:25  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=25 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 6m17s
+
+## 2026-11-21 23:47:48  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=25 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 6m36s
+
+## 2026-11-21 23:55:50  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=25 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 17m24s
+
+## 2026-11-22 00:14:13  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 2m47s
+
+## 2026-11-22 00:17:23  demo sensecraft:battery final dataset - ACT
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  '--label=sensecraft:battery final dataset - ACT' \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\AppData\Roaming\SenseCraft Robotics\backend-storage\projects\proj_0de5a2ce\models\cloud_local_8eaea7cea8f9_artifact\bundle\checkpoints\last\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=battery sample' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m05s
