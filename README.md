@@ -36,7 +36,7 @@ offline), ChatGPT or Claude, chosen with one line in `.env`.
 | Policy | **ACT** (51.6 M parameters), **100,000 steps on an RTX 5090** (cloud, through SenseCraft Robotics) |
 | Retry check | our own ResNet-18, trained in 8 minutes on the laptop's RTX 4060 from 4,000 frames labelled automatically: **99.8 % right on 50 episodes it never saw, never a wrong "in the box", 10 ms per photo, offline** ([report](journal/vision-report.md)) |
 | Dataset | [CrimsonSnowLLC/battery-sample](https://huggingface.co/datasets/CrimsonSnowLLC/battery-sample) on Hugging Face (first session, 108 episodes) |
-| Pitch | [docs/presentation/](docs/presentation/): 8 slides with speaker notes, 4:40 of talk |
+| Pitch | [docs/presentation/](docs/presentation/): 8 slides with speaker notes, 4:10 of talk, plus a backup slide |
 
 ## How it works
 

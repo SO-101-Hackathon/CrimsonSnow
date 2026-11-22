@@ -4,11 +4,11 @@
     pip install python-pptx
     python docs/presentation/build_deck.py                        # rebuild from img/ and NUMBERS
     python docs/presentation/build_deck.py --refresh-images       # copy the pictures again from outputs/
-    python docs/presentation/build_deck.py --panel-shot shot.png  # put a control-panel screenshot on slide 8
+    python docs/presentation/build_deck.py --panel-shot shot.png  # put a control-panel screenshot on slide 7
 
 Every number on the slides is in NUMBERS below: change one (e.g. after the final exam) and
 rebuild. The spoken script and the time for each slide are in its speaker notes
-(PowerPoint: View > Notes). Total talk: 4:40.
+(PowerPoint: View > Notes). Total talk: 4:10.
 """
 
 from __future__ import annotations
@@ -516,27 +516,7 @@ def build(panel_available: bool) -> Presentation:
              "about 80 percent normal placements so it does not forget what it knew. In total "
              f"{N['episodes']} demonstrations, about {N['minutes']} minutes of us driving the arm.")
 
-    # 5 -- the policy ---------------------------------------------------------------------------
-    s = prs.slides.add_slide(content)
-    title(s, f"ACT: {N['steps']} steps on an {N['gpu']}")
-    photo(s, "scene_carry.jpg", M, 1.6, w=3.6, alt="Overhead camera view while the arm carries the battery to the box")
-    photo(s, "wrist_cam.jpg", M + 3.8, 1.6, w=3.6, alt="Wrist camera view: the gripper jaws next to the battery")
-    text(s, M, 4.37, 3.6, 0.4, "Overhead camera", size=16, color=MUTED)
-    text(s, M + 3.8, 4.37, 3.6, 0.4, "Wrist camera", size=16, color=MUTED)
-    card(s, M, 5.0, 7.4, 1.55, name="Training card")
-    text(s, M + 0.35, 5.0, 6.8, 1.55, [[("Trained in the cloud ", {"bold": True}),
-                                        ("through SenseCraft. The demo runs this model.", {})]],
-         size=20, anchor=MSO_ANCHOR.MIDDLE)
-    stat(s, 8.6, 1.6, 4.1, N["params"], "parameters in the ACT policy", label_h=0.45)
-    stat(s, 8.6, 3.3, 4.1, N["steps_short"], f"training steps on an {N['gpu']}", color=CRIMSON, label_h=0.45)
-    stat(s, 8.6, 5.0, 4.1, "2", "cameras: overhead + wrist, 30 fps", label_h=0.45)
-    notes(s, "[0:30 | total 2:20]\n"
-             f"The policy is ACT, Action Chunking with Transformers: {N['params'].replace('M', ' million')} parameters, "
-             "looking through two cameras, one above the table and one on the wrist. We trained it for "
-             f"{N['steps']} steps on an {N['gpu']} in the cloud through SenseCraft, and that is the model you will "
-             "see in the demo.")
-
-    # 6 -- closed loop ----------------------------------------------------------------------------
+    # 5 -- closed loop ----------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "If it fails, it tries again — hands off")
     steps = [("1", "Run the policy", "ACT, up to 40 s"), ("2", "Back to the start", "the same pose every run"),
@@ -567,14 +547,14 @@ def build(panel_available: bool) -> Presentation:
          [[("First test: ", {"color": CRIMSON, "bold": True}), ("the gripper alone said “success”.", {"bold": True})],
           [("The camera shows the battery still in the gripper. That is why we check with vision.",
             {"size": 18, "color": MUTED})]], size=22, after=8, anchor=MSO_ANCHOR.MIDDLE)
-    notes(s, "[0:45 | total 3:05]\n"
+    notes(s, "[0:45 | total 2:35]\n"
              "The demo is five attempts with nobody touching the robot. So we closed the loop. The policy runs; the "
              "arm goes back exactly to its start pose; then we check the result. Battery in the box: success. Still "
              "on the mat: the robot simply tries again, up to three runs per attempt. Why a camera? In our first "
              "test the gripper-only check said success. This photo was taken at that moment: the battery is still "
              "in the gripper. The gripper alone cannot see the box.")
 
-    # 7 -- our own vision check ---------------------------------------------------------------------
+    # 6 -- our own vision check ---------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Our own vision model checks the box")
     text(s, M, 1.6, 5.6, 0.4, "Its answers on recordings it never saw", size=16, color=MUTED)
@@ -609,7 +589,7 @@ def build(panel_available: bool) -> Presentation:
          label_h=0.6)
     text(s, rx, 5.95, rw, 0.7, f"{N['vis_frames']} labelled frames, trained in {N['vis_minutes']} min on the laptop. "
                                "One .env line switches to ChatGPT or Claude.", size=16)
-    notes(s, "[0:45 | total 3:50]\n"
+    notes(s, "[0:45 | total 3:20]\n"
              "We first let ChatGPT check the photo, but the demo should not depend on the venue Wi-Fi. So we "
              "trained our own vision model on this laptop, with no hand labelling: the gripper signal says when the "
              "battery was grabbed and let go. Before, it is on the mat; while held, in the gripper; after, in the "
@@ -620,7 +600,7 @@ def build(panel_available: bool) -> Presentation:
              f"[If asked: with a person's hand in the picture it answered {said(N['vis_real_hands'])} right; when "
              "unsure it falls back to the gripper reading. Details: journal/vision-report.md]")
 
-    # 8 -- built to be repeated -----------------------------------------------------------------------
+    # 7 -- built to be repeated -----------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Built to be repeated — and to demo")
     if panel_available:
@@ -645,7 +625,7 @@ def build(panel_available: bool) -> Presentation:
         badge(s, 8.45, y, 0.5, str(i + 1), size=18)
         text(s, 9.15, y - 0.02, 13.333 - M - 9.15, 0.45, head, size=20, bold=True)
         text(s, 9.15, y + 0.45, 13.333 - M - 9.15, 0.8, body, size=16, color=MUTED)
-    notes(s, "[0:25 | total 4:15]\n"
+    notes(s, "[0:25 | total 3:45]\n"
              "Everything is reproducible. Our 'so' helper wraps the official LeRobot commands and writes every "
              "command we ran into the repository's journal; the tests run on Ubuntu, macOS and Windows in CI. And for "
              "today we built a small control panel: the demo runs from a browser, and you can see every check as it "
@@ -653,7 +633,7 @@ def build(panel_available: bool) -> Presentation:
              "(Team: before the jury round, publish the dataset on Hugging Face. CrimsonSnowLLC/battery-sample is "
              "still private; public gives the +3 bonus. Only then say: 'and our dataset is public on Hugging Face'.)")
 
-    # 9 -- results and live demo ------------------------------------------------------------------------
+    # 8 -- results and live demo ------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Live now: five attempts, hands off")
     card(s, M, 1.6, 5.8, 2.6, name="Before and after card")
@@ -681,7 +661,7 @@ def build(panel_available: bool) -> Presentation:
     below = 1.6 + pic.height / 914400
     text(s, 13.333 - M - pw, below + 0.12, pw, 0.45, "Thank you!", size=24, bold=True, color=CRIMSON)
     text(s, 13.333 - M - pw, below + 0.58, pw, 0.35, REPO, size=16, color=SNOW)
-    notes(s, "[0:25 | total 4:40]\n"
+    notes(s, "[0:25 | total 4:10]\n"
              f"Where we stand: our first model got {said(N['trials'])} by hand. The final model: "
              f"{said(N['final'])}, every order of the four objects over the four places, and "
              f"{N['test_runs']} logged test runs without a failure. In the clutter test, first try. Now live: five "
@@ -742,7 +722,7 @@ def refresh_images() -> None:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--refresh-images", action="store_true", help="copy the pictures again from outputs/ (git-ignored)")
-    p.add_argument("--panel-shot", type=Path, help="screenshot of `so panel` for slide 8")
+    p.add_argument("--panel-shot", type=Path, help="screenshot of `so panel` for slide 7")
     p.add_argument("--out", type=Path, default=OUT)
     args = p.parse_args(argv)
     if args.refresh_images:
