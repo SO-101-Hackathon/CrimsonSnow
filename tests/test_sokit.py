@@ -387,6 +387,7 @@ class DemoRetries(unittest.TestCase):
             sensecraft.pick_model("tnt", root)
 
 
+@unittest.skipUnless(shutil.which("lerobot-train"), "LeRobot is not installed in this environment")
 class DryRun(unittest.TestCase):
     """With LeRobot installed: `so` builds the same command on every operating system."""
 
