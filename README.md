@@ -2,7 +2,7 @@
 
 # CrimsonSnow · SO-101 battery picker
 
-**A low-cost SO-101 arm that learned from 257 demonstrations to pick the battery out of a cluttered
+**An SO-101 arm that learned from 257 demonstrations to pick the battery out of a cluttered
 mat, drop it in the box, and notice by itself when it failed.**
 
 Team CrimsonSnow · Hackathon LeRobot Bilbao (II edition, 20–22 Nov 2026) · LeRobot 0.7.0 · ACT

@@ -395,7 +395,7 @@ def build(panel_available: bool) -> Presentation:
     N = NUMBERS
     prs = Presentation()
     prs.slide_width, prs.slide_height = SLIDE_W, SLIDE_H
-    prs.core_properties.title = "CrimsonSnow: teaching a low-cost arm to pick out the battery"
+    prs.core_properties.title = "CrimsonSnow: teaching an arm to pick out the battery"
     prs.core_properties.author = prs.core_properties.last_modified_by = "Team CrimsonSnow"
     prs.core_properties.subject = "Hackathon LeRobot Bilbao 2026: 5-minute pitch"
     apply_theme(prs)
@@ -408,7 +408,7 @@ def build(panel_available: bool) -> Presentation:
     r.font.size, r.font.bold, r.font.color.rgb = Pt(60), True, rgb(SNOW)
     s.shapes.title.text_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
     sub = s.placeholders[1]
-    sub.text = "Teaching a low-cost arm\vto pick out the battery —\vand to notice when it failed"  # \v: line break
+    sub.text = "Teaching an arm\vto pick out the battery —\vand to notice when it failed"  # \v: line break
     sub.text_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
     sub.text_frame.vertical_anchor = MSO_ANCHOR.TOP
     for r in sub.text_frame.paragraphs[0].runs:
@@ -419,7 +419,7 @@ def build(panel_available: bool) -> Presentation:
                 alt="Overhead camera: the battery (wooden block) on the mat among a duck, a toy car and a TNT cube")
     ring(s, pic, "scene_start.jpg")
     notes(s, "[0:15 | total 0:15]\n"
-             "Hi, we are CrimsonSnow. We taught a low-cost SO-101 arm to find a battery among other objects and put "
+             "Hi, we are CrimsonSnow. We taught an SO-101 arm to find a battery among other objects and put "
              "it in a box, and to notice by itself when it failed, and try again.")
 
     # 2 -- the task ---------------------------------------------------------------------------
