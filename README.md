@@ -12,7 +12,10 @@ Team CrimsonSnow · Hackathon LeRobot Bilbao (II edition, 20–22 Nov 2026) · L
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776ab)
 ![Windows · macOS · Linux](https://img.shields.io/badge/runs%20on-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-555555)
 
-<img src="docs/images/before-after.jpg" width="820" alt="Overhead camera: the battery on the mat among a duck, a car and a TNT cube (left), and in the box after the robot's run (right)">
+<a href="docs/presentation/video/clutter_test_2x.mp4"><img src="docs/images/clutter-test.gif" width="820" alt="Real run, 2x speed: the arm picks the battery out of a mat covered with ducks, scissors, keys, a phone and tape, and drops it in the box on the first try"></a>
+
+*Real run at 2× speed: the battery among 14 other objects, picked and dropped in the box on the first try
+(overhead camera left, wrist camera right; [video](docs/presentation/video/clutter_test_2x.mp4)).*
 
 </div>
 
@@ -23,6 +26,8 @@ pink TNT cube and, in later recordings, a yellow cube, a tape roll and a pen. Th
 battery, and only the battery, and drop it in the cardboard box. Batteries that end up in the wrong
 bin start fires in waste trucks and sorting plants; picking them out of mixed items is a real sorting
 job, and here a hobby-grade arm learns it from demonstrations.
+
+<p align="center"><img src="docs/images/before-after.jpg" width="720" alt="Overhead camera: the battery on the mat among a duck, a car and a TNT cube (left), and in the box after the robot's run (right)"></p>
 
 What makes the demo different: **it checks its own work.** After each run the arm returns to its start
 pose, a camera check decides where the battery is, and if it is still on the mat the policy simply runs
