@@ -46,6 +46,9 @@ NUMBERS = {
     "retry_ok": "4/7", "retry_saved": "3",
     # final model, 22 Nov: every order of the 4 objects over the 4 taped places (battery straight), team's test page
     "final": "24/24",
+    # the team's shared test pages: 23/23 on the all-24-arrangements page + 11/11 on the tapes-2-and-3 page
+    # (the 24th arrangement and the 12th tapes run were run but not ticked)
+    "test_runs": "34", "test_fails": "0",
     # clutter test, 22 Nov (outputs/demo/test video trash/test.mp4): objects on the mat besides the battery
     "clutter_others": "14",
     # the demo model
@@ -74,7 +77,14 @@ PANEL = "panel.jpg"  # written by --panel-shot
 # Stills of the clutter test (22 Nov 2026), from outputs/demo/test video trash/test.mp4 (overhead camera on
 # the left half, wrist camera on the right): kept as they are in img/, --refresh-images does not touch them.
 # trash_end_rest.jpg is the overhead half at 32.5 s: battery in the box, arm back at rest.
-FIXED = ["trash_start.jpg", "trash_grip_wrist.jpg", "trash_end_rest.jpg"]
+FIXED = ["trash_start.jpg", "trash_grip_wrist.jpg", "trash_end_rest.jpg", "clutter_poster.jpg", "bonus_es_poster.jpg"]
+
+# Videos. The clutter clip (17 s, the real test at 2x speed, first frame = clutter_poster.jpg) lives with the
+# deck; the 1-minute Spanish video stays in outputs/ (60 s, no sound; bonus_es_poster.jpg is its frame at 20 s).
+# A missing video is skipped with a note: slide 3 falls back to the stills, the bonus slide is left out.
+CLUTTER_VIDEO = HERE / "video" / "clutter_test_2x.mp4"
+BONUS_VIDEO = ROOT / "outputs" / "video" / "CrimsonSnow-1min-ES.mp4"
+BONUS_VIDEO_EN = "outputs/video/CrimsonSnow-1min.mp4"
 
 # where the battery is in the photos (pixel centre, ring half-size) for the crimson rings
 BATTERY = {
@@ -299,6 +309,16 @@ def ring(slide, pic, name, color=CRIMSON, width=3.0):
     return s
 
 
+def movie(slide, path: Path, x, y, w, h, poster: str, alt: str):
+    """An embedded MP4 that plays when clicked (in the slide show, or with the play button when editing)."""
+    m = slide.shapes.add_movie(str(path), Inches(x), Inches(y), Inches(w), Inches(h),
+                               poster_frame_image=str(IMG / poster), mime_type="video/mp4")
+    m.name = alt[:60]
+    m._element.nvPicPr.cNvPr.set("descr", alt)
+    m.line.color.rgb, m.line.width = rgb(LINE), Pt(1)
+    return m
+
+
 def _arrow_head(line_format) -> None:
     ln = line_format._get_or_add_ln()
     etree.SubElement(ln, qn("a:tailEnd"), type="triangle", w="med", len="med")
@@ -345,6 +365,31 @@ def title(slide, words: str) -> None:
     slide.shapes.title.text = words
 
 
+def clutter_stills(s, N) -> None:
+    """Slide 3 without the video: start still (battery circled), grip close-up and end still."""
+    big_h, small_w = 4.45, 2.75
+    pic = photo(s, "trash_start.jpg", M, 1.6, h=big_h,
+                alt=f"Clutter test start: the battery among {N['clutter_others']} other objects: five rubber ducks, "
+                    "a phone, scissors, a nail clipper, keys, a tape roll, a pen and three cubes")
+    ring(s, pic, "trash_start.jpg")
+    rx = M + pic.width / 914400 + 0.35
+    small_h = small_w * 0.75
+    shots = [("trash_grip_wrist.jpg", 1.6, "Gripped", "wrist camera, first run",
+              "Wrist camera: the battery held between the gripper jaws"),
+             ("trash_end_rest.jpg", 1.6 + big_h - small_h, "In the box", f"the other {N['clutter_others']} untouched",
+              "Clutter test end: the battery in the box, every other object where it was, the arm back at rest")]
+    for img, y, head, sub_text, alt in shots:
+        shot = photo(s, img, rx, y, w=small_w, alt=alt)
+        if img in BATTERY:
+            ring(s, shot, img, width=2.5)
+        lx = rx + small_w + 0.3
+        text(s, lx, y + small_h / 2 - 0.5, 13.333 - M - lx, 0.45, head, size=22, bold=True)
+        text(s, lx, y + small_h / 2 - 0.02, 13.333 - M - lx, 0.7, sub_text, size=15, color=MUTED)
+    text(s, M, 6.2, 13.333 - 2 * M, 0.45,
+         [[(N["clutter_others"], {"bold": True, "color": CRIMSON}), (" other objects on the mat  ·  battery picked ", {}),
+           ("first try", {"bold": True, "color": CRIMSON})]], size=20, name="Clutter caption")
+
+
 # ---------------------------------------------------------------- the slides
 def build(panel_available: bool) -> Presentation:
     N = NUMBERS
@@ -380,55 +425,63 @@ def build(panel_available: bool) -> Presentation:
     # 2 -- the task ---------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Find the battery, drop it in the box")
-    steps = [("scene_start.jpg", "On the mat", "Start: the battery on the mat among other objects"),
-             ("scene_carry.jpg", "Picked and carried", "The arm carries the battery to the box"),
-             ("scene_end.jpg", "In the box", "End: the battery in the box, the arm back at rest")]
-    for i, (img, caption, alt) in enumerate(steps):
-        x = M + i * (3.9 + 0.215)
-        pic = photo(s, img, x, 1.6, w=3.9, alt=alt)
-        if img in BATTERY:
-            ring(s, pic, img, width=2.5)
-        badge(s, x, 4.7, 0.46, str(i + 1), size=18)
-        text(s, x + 0.62, 4.72, 3.2, 0.45, caption, size=20, bold=True, anchor=MSO_ANCHOR.MIDDLE)
-    text(s, M, 5.55, 12.1, 0.5, [[("Why: ", {"color": CRIMSON, "bold": True}),
-                                    ("batteries in mixed waste start fires in trucks and sorting plants.", {})]], size=22)
-    text(s, M, 6.15, 12.1, 0.4, "On the mat with it: a rubber duck, a toy car, a TNT cube.", size=16, color=MUTED)
+    findings = [(["Spain: a waste plant catches fire", "every 3.5 days"],
+                 "109 fires in 2023; lithium batteries are a growing cause"),
+                ("Batteries arrive in household rubbish", "phones, vapes, toys"),
+                ("Picking them out by hand is dangerous", "a damaged battery can catch fire without warning")]
+    for i, (head, sub_text) in enumerate(findings):
+        y = 1.65 + i * 1.32
+        badge(s, M, y, 0.48, str(i + 1), size=18)
+        text(s, M + 0.7, y - 0.04, 5.3, 0.8, head, size=20, bold=True)
+        text(s, M + 0.7, y + 0.72 if i == 0 else y + 0.42, 5.3, 0.45, sub_text, size=15, color=MUTED)
+    text(s, M, 5.75, 5.9, 0.6, "Sources: TECNIFUEGO via IFEMA SICUR (fires); FER, Federación Española de la "
+                               "Recuperación y el Reciclaje (household rubbish)", size=12, color=MUTED, name="Sources")
+    pw = 13.333 - M - 6.95
+    pic = photo(s, "scene_start.jpg", 6.95, 1.6, w=pw,
+                alt="Our task: the battery (wooden block) on the mat among a duck, a toy car and a TNT cube")
+    ring(s, pic, "scene_start.jpg")
+    below = 1.6 + pic.height / 914400
+    text(s, 6.95, below + 0.15, pw, 0.45, [[("Our task: ", {"bold": True, "color": CRIMSON}),
+                                           ("pick the battery out, drop it in the box", {"bold": True})]], size=18)
+    text(s, 6.95, below + 0.6, pw, 0.4, "on the mat with it: a rubber duck, a toy car, a TNT cube", size=15,
+         color=MUTED)
     notes(s, "[0:30 | total 0:45]\n"
-             "Why batteries? A battery in mixed waste can be crushed in a garbage truck or a sorting plant and start "
-             "a fire. So this is our task: among a rubber duck, a toy car and a TNT cube, the arm picks the one thing "
-             "that matters, the battery, and drops it into its own box. It learns this only from our "
-             "demonstrations; nothing is programmed by hand.\n"
-             "[Background, if asked: later recordings also had a yellow cube, a tape roll and a pen on the mat.]")
+             "Why batteries? In Spain a waste plant catches fire every three and a half days: 109 fires in 2023, and "
+             "lithium batteries are a growing cause. They arrive in household rubbish: phones, vapes, toys. Picking "
+             "them out by hand is dangerous; a damaged battery can catch fire without warning. So our task: among "
+             "other objects, the arm picks the battery and drops it into its own box, learned only from our "
+             "demonstrations.\n"
+             "[If asked: the UK counted 2,839 battery fires in its waste system in 2025, one every 3 hours (Recycle "
+             "Your Electricals research, reported by Insurance Times). The EU must collect 73% of portable batteries "
+             "by 2030 (Regulation (EU) 2023/1542). Spain's 109 fires: TECNIFUEGO via IFEMA SICUR, all waste-plant "
+             "fires, so 'a growing cause', not 'the cause'. Household rubbish: FER. Later recordings also had a "
+             "yellow cube, a tape roll and a pen on the mat.]")
 
     # 3 -- clutter test -------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
     title(s, "Only the battery, even in a pile of junk")
-    big_h, small_w = 4.45, 2.75
-    pic = photo(s, "trash_start.jpg", M, 1.6, h=big_h,
-                alt=f"Clutter test start: the battery among {N['clutter_others']} other objects: five rubber ducks, "
-                    "a phone, scissors, a nail clipper, keys, a tape roll, a pen and three cubes")
-    ring(s, pic, "trash_start.jpg")
-    rx = M + pic.width / 914400 + 0.35
-    small_h = small_w * 0.75
-    shots = [("trash_grip_wrist.jpg", 1.6, "Gripped", "wrist camera, first run",
-              "Wrist camera: the battery held between the gripper jaws"),
-             ("trash_end_rest.jpg", 1.6 + big_h - small_h, "In the box", f"the other {N['clutter_others']} untouched",
-              "Clutter test end: the battery in the box, every other object where it was, the arm back at rest")]
-    for img, y, head, sub_text, alt in shots:
-        shot = photo(s, img, rx, y, w=small_w, alt=alt)
-        if img in BATTERY:
-            ring(s, shot, img, width=2.5)
-        lx = rx + small_w + 0.3
-        text(s, lx, y + small_h / 2 - 0.5, 13.333 - M - lx, 0.45, head, size=22, bold=True)
-        text(s, lx, y + small_h / 2 - 0.02, 13.333 - M - lx, 0.7, sub_text, size=15, color=MUTED)
-    text(s, M, 6.2, 13.333 - 2 * M, 0.45,
-         [[(N["clutter_others"], {"bold": True, "color": CRIMSON}), (" other objects on the mat  ·  battery picked ", {}),
-           ("first try", {"bold": True, "color": CRIMSON})]], size=20, name="Clutter caption")
+    if CLUTTER_VIDEO.is_file():
+        vw = 11.4
+        vh = vw * 524 / 1280
+        vx = (13.333 - vw) / 2
+        movie(s, CLUTTER_VIDEO, vx, 1.55, vw, vh, "clutter_poster.jpg",
+              f"Clutter test video at 2x speed: overhead camera left, wrist camera right; the battery among "
+              f"{N['clutter_others']} other objects is picked and dropped in the box on the first run")
+        text(s, vx, 1.55 + vh + 0.15, vw * 0.68, 0.45,
+             [[(N["clutter_others"], {"bold": True, "color": CRIMSON}), (" other objects on the mat  ·  battery picked ", {}),
+               ("first try", {"bold": True, "color": CRIMSON})]], size=20, name="Clutter caption")
+        text(s, vx + vw * 0.68, 1.55 + vh + 0.2, vw * 0.32, 0.4, "click to play · real run, 2× speed", size=14,
+             color=MUTED, align=PP_ALIGN.RIGHT, name="Play hint")
+    else:
+        print(f"note: {CLUTTER_VIDEO.relative_to(ROOT).as_posix()} not found: slide 3 shows the stills instead")
+        clutter_stills(s, N)
     notes(s, "[0:20 | total 1:05]\n"
              f"Then we made it hard: the battery plus {N['clutter_others']} other things on the mat, five rubber "
-             "ducks, a phone, scissors, keys, a pen, cubes. First run: the arm went straight for the battery, gripped "
-             "it, that is the wrist camera, and dropped it in the box. Nothing else moved.\n"
-             "[Video: outputs/demo/test video trash/test.mp4, 22 Nov 2026, recorded by so demo --record-video.]")
+             "ducks, a phone, scissors, keys, a pen, cubes. [Click the video: 17 s, real run at 2x speed.] First run: "
+             "the arm goes straight for the battery, grips it, that is the wrist camera on the right, and drops it in "
+             "the box. Nothing else moves.\n"
+             "[Source: outputs/demo/test video trash/test.mp4, 22 Nov 2026, recorded by so demo --record-video.]")
+
 
     # 4 -- data ---------------------------------------------------------------------------------
     s = prs.slides.add_slide(content)
@@ -608,8 +661,10 @@ def build(panel_available: bool) -> Presentation:
     text(s, M + 0.3, 2.75, 1.6, 1.0, ["first model,", "by hand"], size=15, color=MUTED, name="Before label")
     arrow(s, M + 1.85, 2.3, M + 2.5, 2.3, color=CRIMSON, width=3.5, name="Before to after")
     text(s, M + 2.7, 1.7, 3.0, 1.15, [[(N["final"], {"size": 66, "bold": True, "color": CRIMSON})]], name="After number")
-    text(s, M + 2.7, 2.85, 2.95, 1.2, ["final model: all 24 orders", "of 4 objects on 4 places"], size=16,
+    text(s, M + 2.7, 2.85, 2.95, 0.7, ["final model: all 24 orders", "of 4 objects on 4 places"], size=16,
          name="After label")
+    text(s, M + 0.3, 3.65, 5.3, 0.4, f"{N['test_runs']} logged test runs, {N['test_fails']} failures", size=16,
+         bold=True, color=GREEN, name="Evidence")
     card(s, M, 4.4, 5.8, 1.05, name="Clutter card")
     text(s, M + 0.3, 4.4, 1.9, 1.05, [[("1st try", {"size": 30, "bold": True, "color": SNOW})]],
          anchor=MSO_ANCHOR.MIDDLE, name="Clutter number")
@@ -628,11 +683,32 @@ def build(panel_available: bool) -> Presentation:
     text(s, 13.333 - M - pw, below + 0.58, pw, 0.35, REPO, size=16, color=SNOW)
     notes(s, "[0:25 | total 4:40]\n"
              f"Where we stand: our first model got {said(N['trials'])} by hand. The final model: "
-             f"{said(N['final'])}, every order of the four objects over the four places. And in the clutter test, "
-             "first try. Now live: five attempts, hands off. Thank you!\n"
-             f"[If asked: the {N['final'].split('/')[1]} arrangements had the battery straight. Our first "
-             f"automatic-retry tests with the old model reached {said(N['retry_ok'])} attempts, {N['retry_saved']} "
-             "of them saved by a retry.]")
+             f"{said(N['final'])}, every order of the four objects over the four places, and "
+             f"{N['test_runs']} logged test runs without a failure. In the clutter test, first try. Now live: five "
+             "attempts, hands off. Thank you!\n"
+             f"[If asked: the {N['final'].split('/')[1]} arrangements had the battery straight. The {N['test_runs']} "
+             "runs are the team's test pages: 23 of 23 on the all-arrangements page and 11 of 11 on the tapes 2 and 3 "
+             "page. Two candidates are still running: a fine-tune with 24 extra demonstrations for tapes 2 and 3, and "
+             "a from-scratch retrain on all 281 episodes (ACT, 100k steps, A100); the demo runs the one that tests "
+             f"best. Our first automatic-retry tests with the old model reached {said(N['retry_ok'])} attempts, "
+             f"{N['retry_saved']} of them saved by a retry.]")
+
+    # bonus -- not part of the 5:00 talk --------------------------------------------------------------
+    if BONUS_VIDEO.is_file():
+        s = prs.slides.add_slide(content)
+        title(s, "Backup / bonus: CrimsonSnow in 1 minute")
+        vh = 4.6
+        vw = vh * 16 / 9
+        vx = (13.333 - vw) / 2
+        movie(s, BONUS_VIDEO, vx, 1.5, vw, vh, "bonus_es_poster.jpg",
+              "CrimsonSnow in 1 minute, Spanish version, 60 seconds, no sound")
+        text(s, vx, 1.5 + vh + 0.15, vw, 0.4, "Spanish version · 60 s · no sound: voice-over live · click to play",
+             size=14, color=MUTED, align=PP_ALIGN.CENTER, name="Bonus caption")
+        notes(s, "[Backup / bonus: not part of the 5:00 talk. Show only if there is time or the jury asks.]\n"
+                 "The Spanish 1-minute video has no sound: one of us reads the voice-over live while it plays. "
+                 f"English version: {BONUS_VIDEO_EN}.")
+    else:
+        print(f"note: {BONUS_VIDEO.relative_to(ROOT).as_posix()} not found on this computer: bonus slide left out")
     return prs
 
 
