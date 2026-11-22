@@ -2,7 +2,7 @@
 
 # CrimsonSnow · SO-101 battery picker
 
-**An SO-101 arm that learned from 257 demonstrations to pick the battery out of a cluttered
+**An SO-101 arm that learned from 293 demonstrations to pick the battery out of a cluttered
 mat, drop it in the box, and notice by itself when it failed.**
 
 Team CrimsonSnow · Hackathon LeRobot Bilbao (II edition, 20–22 Nov 2026) · LeRobot 0.7.0 · ACT
@@ -32,17 +32,19 @@ offline), ChatGPT or Claude, chosen with one line in `.env`.
 | | |
 |---|---|
 | Robot | SO-101 leader + follower (6 axes each), overhead camera + wrist camera, 640×480 @ 30 fps |
-| Data | **257 teleoperated episodes, 169,675 frames (≈ 94 min)**: 108 balanced arrangements + 149 targeted at the failures we found |
-| Policy | **ACT** (51.6 M parameters), **100,000 steps on an RTX 5090** (cloud, through SenseCraft Robotics) |
+| Data | **293 teleoperated episodes, 193,638 frames (≈ 108 min)**: 108 balanced arrangements, 149 aimed at the failures we found, 24 on the weakest spots, 12 along the whole arc |
+| Policy | **ACT** (51.6 M parameters). First model: 100,000 steps on an RTX 5090 (SenseCraft's cloud). Final models: **100,000 steps from scratch on an A100** (Hugging Face Jobs, 1 h 57 min), then **fine-tuned 20,000 steps** with the 12 arc episodes |
+| Models | [act_battery_full_100k](https://huggingface.co/CrimsonSnowLLC/act_battery_full_100k) · [fine-tuned for every location](https://huggingface.co/CrimsonSnowLLC/act_battery_finetune_locations_2026-11-22_03-35-47) (public, with model cards) |
+| Results | first model **3/7** by hand → **24/24** orders of the objects on the 4 taped places → final model **9 of 11** logged attempts in the box on the first run, one of them on a cluttered mat ([journal/demo.csv](journal/demo.csv)) |
 | Retry check | our own ResNet-18, trained in 8 minutes on the laptop's RTX 4060 from 4,000 frames labelled automatically: **99.8 % right on 50 episodes it never saw, never a wrong "in the box", 10 ms per photo, offline** ([report](journal/vision-report.md)) |
-| Dataset | [CrimsonSnowLLC/battery-sample](https://huggingface.co/datasets/CrimsonSnowLLC/battery-sample) on Hugging Face (first session, 108 episodes) |
-| Pitch | [docs/presentation/](docs/presentation/): 8 slides with speaker notes, 4:10 of talk, plus a backup slide |
+| Datasets | [battery-full-dataset](https://huggingface.co/datasets/CrimsonSnowLLC/battery-full-dataset) (281 episodes) · [battery-full-plus-locations](https://huggingface.co/datasets/CrimsonSnowLLC/battery-full-plus-locations) (+12 along the arc), public on Hugging Face in LeRobot format |
+| Pitch | [docs/presentation/](docs/presentation/): 9 slides with speaker notes and two videos of real runs, 4:30 of talk, plus a bonus slide |
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    R["Teleoperated demonstrations<br/>257 episodes, 2 cameras"] --> T["ACT policy<br/>100k steps, RTX 5090"]
+    R["Teleoperated demonstrations<br/>293 episodes, 2 cameras"] --> T["ACT policy<br/>100k steps + 20k fine-tune, A100"]
     R --> L["Frames labelled from the<br/>gripper signal: on the mat,<br/>in the gripper, in the box"]
     L --> V["Our retry check<br/>ResNet-18, RTX 4060"]
     T --> D(["so demo"])
@@ -77,11 +79,22 @@ kept in `outputs/demo/`.
    recorded straight, turned 20° left and right, and moved 2 cm towards and away from the arm, while
    straight placements stay at about 80 % of all data (the plan and the recording sheet are web pages
    in [docs/strategy/](docs/strategy/): `fix-plan.html` and `recordings.html`, open them in a browser).
-4. **Retrained on everything:** 257 episodes, ACT, 100,000 steps on an RTX 5090.
+4. **Retrained on everything:** 257 episodes, ACT, 100,000 steps on an RTX 5090 (SenseCraft's cloud).
+   Every order of the four objects over the four taped places worked (24/24), 34 runs on the team's test
+   pages without a failure, and the battery came out of a pile of 14 other objects on the first try.
 5. **Closed the loop.** In the first retry tests with the old model, 3 of the 4 successful attempts
    only succeeded on the second or third run, and a gripper-only check once called a run a success
    while the battery was still in the gripper. Hence a camera check, and then our own model for it,
    so the demo needs no internet and no API key.
+6. **The weakest places, then the gaps.** 24 more episodes on taped places 2 and 3, and all 281 retrained
+   from scratch on Hugging Face Jobs (ACT, 100,000 steps, batch 8, one A100, 1 h 57 min). That model missed
+   only in two gaps between the taped places, where nobody had recorded, so we recorded 12 episodes along
+   the whole arc ([docs/strategy/arc.html](docs/strategy/arc.html)) and fine-tuned it for 20,000 more steps,
+   the 12 counted twice so they weigh about 9 % (about 25 min on an A100).
+7. **Final model:** 9 of 11 logged attempts in the box on the first run, the other two on the second
+   ([journal/demo.csv](journal/demo.csv), 22 Nov 05:04–05:23). Four of them, filmed by
+   `so demo --record-video`, are on slide 7 of the deck
+   ([video](docs/presentation/video/final_model_3x.mp4), 3× speed).
 
 ## Our own retry check (`so vision`)
 
@@ -222,6 +235,8 @@ arms' ports and the cameras open.
 | [journal/eval.csv](journal/eval.csv) | manual trials (`so try`): verdict and note per run |
 | [journal/demo.csv](journal/demo.csv) | demo attempts with retries: every run, the check's answer, the decision |
 | [journal/vision-report.md](journal/vision-report.md) | how well our retry check does on unseen episodes and real photos |
+| [docs/presentation/video/](docs/presentation/video/) | real runs filmed by `so demo --record-video`: the clutter test (2×) and the final model (3×) |
+| [Hugging Face: CrimsonSnowLLC](https://huggingface.co/CrimsonSnowLLC) | the datasets and the two final models, with cards that say how each was made |
 | [docs/SETUP_LOG.md](docs/SETUP_LOG.md) | what was installed and decided, when |
 | [docs/strategy/](docs/strategy/) | recording plans and checklists |
 

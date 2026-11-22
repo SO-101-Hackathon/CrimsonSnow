@@ -86,6 +86,13 @@ by hand, because `robot.env` is not tracked. Every recording of one dataset must
 | Video with the team's voice-over | `docs/presentation/build_story_video.py` cuts the four Spanish voice-over recordings (80 s raw, 66 s of speech) to 60 s and times every picture to the spoken word (Whisper word times, measured locally); output `outputs/video/CrimsonSnow-1min-ES-voz.mp4`. The recordings stay out of git (`recording/` in `.gitignore`) | `python docs/presentation/build_story_video.py` |
 | Choosing the check in `.env` | `RETRY_CHECK` picks the check of `so demo` when no `--check` is given: `local` (our model), `openai`, `claude`, `grip`, or `auto` (the behaviour before this setting). This laptop's `.env` now says `RETRY_CHECK=local`; its API key was left as it was | copy `.env.example` to `.env` |
 
+## 22 Nov 2026 — final delivery
+
+| Step | What was done | How to repeat it |
+|---|---|---|
+| Public on Hugging Face | Datasets `CrimsonSnowLLC/battery-full-dataset` (281 episodes) and `battery-full-plus-locations` (+12 along the arc, held twice), models `act_battery_full_100k` (100k steps from scratch, A100) and `act_battery_finetune_locations_2026-11-22_03-35-47` (+20k steps on the arc): cards that say how each was made and link to this repository, then switched to public. `battery-sample` (the first session) stays private. | `HfApi().upload_file(..., path_in_repo="README.md")`, then `HfApi().update_repo_settings(repo_id, repo_type, private=False)` |
+| Final deck | 9 slides + bonus, 4:30: data in 4 sessions (293 episodes), a new slide 7 with four recorded runs of the final model (9 of 11 logged attempts on the first run, `journal/demo.csv`), the four models on slide 9, the public links. The teammates' edits are kept: the deck is rebuilt from `build_deck.py`, which holds them. | `python docs/presentation/build_demo_clip.py` (lerobot env), then `python docs/presentation/build_deck.py`; `--voice` for the laptop copy with the voiced bonus video (`outputs/presentation/`, not public) |
+
 ## Still to do at the venue
 
 - `so teleop` on the Windows laptop: confirm the follower mirrors the leader with the copied calibration.

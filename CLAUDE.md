@@ -53,7 +53,7 @@ training speed) lives in `.so101-state.json` (git-ignored).
 | `sokit/sensecraft.py` | finds SenseCraft's trained models and its follower calibration (read only); used by `so demo --sensecraft` |
 | `sokit/vision.py` | `so vision prepare/train/test/check`: our own camera check for `so demo` (`--check local`, or `RETRY_CHECK=local` in `.env`). ResNet-18 fine-tuned on frames labelled automatically from the gripper trace (on the mat / in the gripper / in the box); `prepare` copies the dataset first (SenseCraft's folders are only read); model in `outputs/vision/model/` (git-ignored), report in `journal/vision-report.md` |
 | `sokit/panel.py`, `sokit/panel.html` | `so panel`: local web control panel for the presentation; runs `so demo`/`try`/`teleop`/`cameras`/`doctor` as one child process and drives it through stdin; `--mock` runs a fake robot session for testing |
-| `docs/presentation/` | the 5-minute pitch deck; `build_deck.py` rebuilds it with python-pptx (installed outside the `lerobot` env) |
+| `docs/presentation/` | the 5-minute pitch deck; `build_deck.py` rebuilds it with python-pptx (installed outside the `lerobot` env), `--voice` writes the laptop copy with the voiced bonus video to `outputs/presentation/` (never commit the voice); `build_demo_clip.py` (lerobot env) cuts slide 7's clip from `outputs/demo/` |
 | `setup.sh`, `tests/`, `.github/workflows/ci.yml` | setup on Ubuntu/macOS/WSL, robot-free tests, and the CI that runs both on clean machines |
 | `sokit/qa.py`, `plan.py`, `evallog.py`, `camcheck.py`, `calib.py`, `doctor.py` | dataset QA, step planner, eval tally, camera alignment, calibration backup, self-check |
 
