@@ -33,3 +33,8 @@ python docs/presentation/build_deck.py --panel-shot panel.png     # new control-
 The clutter-test pictures (`img/trash_*.jpg`, `img/clutter_poster.jpg`) are stills of
 `outputs/demo/test video trash/test.mp4` (22 Nov 2026) and are not refreshed; `img/bonus_es_poster.jpg` is the
 1-minute video at 20 s.
+
+
+## Final cut with the team's voice (Spanish)
+
+`outputs/video/CrimsonSnow-1min-ES-voz.mp4`: exactly 60 s, 1920×1080, AAC sound. The four voice-over recordings in `recording/` (kept on the laptop, git-ignored) are trimmed, their pauses shortened, sped up ×1.12 without changing the pitch and levelled to -16 LUFS. Every picture change sits on the word it illustrates (word times measured once with Whisper, listed in `EVENTS`), with the spoken text as subtitles. Rebuild: `python docs/presentation/build_story_video.py`.

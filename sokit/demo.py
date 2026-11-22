@@ -450,7 +450,14 @@ def ask_local(scene_jpeg: bytes, wrist_jpeg: bytes | None, *, model: str, timeou
     """Same answer format as ask_claude, from our own vision model: offline, no API key."""
     from . import vision
 
-    return vision.verdict(scene_jpeg, model_path=model)
+    try:
+        return vision.verdict(scene_jpeg, model_path=model)
+    except Exception as e:  # noqa: BLE001
+        # `python -m sokit.demo` runs this file as __main__ while vision imports sokit.demo: two copies of
+        # CheckFailed exist. Hand back our own copy so run_once() catches it and falls back to the gripper.
+        if type(e).__name__ == "CheckFailed":
+            raise CheckFailed(str(e)) from e
+        raise
 
 
 def default_model(provider: str | None) -> str:
@@ -672,6 +679,8 @@ class Demo:
                     check.explanation += f" (also in the box: {', '.join(others)})"
             except CheckFailed as e:
                 check.error = str(e)
+            except Exception as e:  # noqa: BLE001 - a broken check must never end the demo: fall back to the gripper
+                check.error = f"camera check failed: {type(e).__name__}: {e}"[:200]
         success, retry, reason = decide(check)
         return Run(number, seconds, ended_by, check, success, retry, reason)
 

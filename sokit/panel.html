@@ -655,8 +655,10 @@ async function loadModels() {
   let models = [];
   try { models = (await api("/api/models")).models; } catch (e) { /* none */ }
   for (const m of models) {
-    const o = el("option", "", m.name + (m.steps ? " — " + Number(m.steps).toLocaleString("en") + " steps" : "") + " (SenseCraft)");
-    o.value = "sc:" + m.name;
+    const local = m.kind === "local";
+    const o = el("option", "", m.name + (m.steps ? " — " + Number(m.steps).toLocaleString("en") + " steps" : "") +
+                 (local ? " (trained on this laptop)" : " (SenseCraft)"));
+    o.value = local ? "run:" + m.path : "sc:" + m.name;
     sel.appendChild(o);
   }
   const last = el("option", "", "Last run trained with so train");
@@ -685,6 +687,7 @@ function request() {
   if (cmd === "demo" || cmd === "try") {
     const v = $("model").value;
     if (v.startsWith("sc:")) { req.source = "sensecraft"; req.sensecraft = v.slice(3); }
+    else if (v.startsWith("run:")) { req.source = "policy"; req.policy = v.slice(4); }
     else if (v === "path") { req.source = "policy"; req.policy = $("policy").value; }
     else req.source = "last";
     req.seconds = $("seconds").value;

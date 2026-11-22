@@ -233,3 +233,21 @@ class Inference(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class UnsureCheckDoesNotStopTheDemo(unittest.TestCase):
+    """`python -m sokit.demo` runs demo.py as __main__, so vision raises a *different* CheckFailed class."""
+
+    def test_foreign_check_failed_becomes_ours(self):
+        class CheckFailed(Exception):  # stands in for sokit.demo.CheckFailed seen from __main__
+            pass
+
+        with mock.patch.object(vision, "verdict", side_effect=CheckFailed("our model is unsure (on the mat 49%)")):
+            with self.assertRaises(demo.CheckFailed) as ctx:
+                demo.ask_local(b"jpeg", None, model="m.pt", timeout=1)
+        self.assertIn("unsure", str(ctx.exception))
+
+    def test_other_errors_are_not_disguised(self):
+        with mock.patch.object(vision, "verdict", side_effect=RuntimeError("cuda out of memory")):
+            with self.assertRaises(RuntimeError):
+                demo.ask_local(b"jpeg", None, model="m.pt", timeout=1)

@@ -36,3 +36,6 @@ Thumbs.db
 
 # Editable-install metadata
 *.egg-info/
+
+# Voice-over recordings of team members (personal): kept on the laptop, not published
+recording/

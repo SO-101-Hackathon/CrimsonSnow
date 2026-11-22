@@ -1006,7 +1006,15 @@ class Panel:
             found = SC.models()
         except Exception:  # noqa: BLE001 - SenseCraft missing or its files unreadable
             found = []
-        return {"models": [{"name": m.name, "steps": m.steps, "updated": m.updated[:16]} for m in found]}
+        local = []  # models trained on this computer (so train, or lerobot-train into outputs/train)
+        for cfg_file in sorted((ROOT / "outputs" / "train").glob("*/checkpoints/last/pretrained_model/config.json"),
+                               key=lambda p: p.stat().st_mtime, reverse=True):
+            run = cfg_file.parents[3]
+            steps = [int(p.name) for p in (run / "checkpoints").iterdir() if p.name.isdigit()]
+            local.append({"name": run.name, "steps": max(steps) if steps else None, "kind": "local",
+                          "path": cfg_file.parent.relative_to(ROOT).as_posix()})
+        return {"models": local + [{"name": m.name, "steps": m.steps, "updated": m.updated[:16], "kind": "sensecraft"}
+                                   for m in found]}
 
     def results(self) -> dict:
         return {"demo": summarize_demo_log(), "eval": summarize_eval_log()}

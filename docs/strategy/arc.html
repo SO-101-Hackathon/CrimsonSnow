@@ -1,0 +1,378 @@
+<title>Battery Arc Recordings</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: the team's recording-sheet look. A top view of the mat with the four tapes for the next
+   recording, the counts per group, then all 24 with shared ticks and what to do afterwards. */
+:root {
+  --bg: #f1f5f2; --surface: #ffffff; --ink: #14201b; --muted: #55645d; --rule: #d3dcd6; --soft: #e6ede9;
+  --mat: #3b4240; --tape: #e8ece9; --stick: #c9a06a; --tnt: #d6336c; --duck: #f2c200; --car: #2f6fde; --arm: #f26b1d;
+  --on-dark: #ffffff; --on-light: #1c1a05; --go: #1c6a53; --warn-bg: #fbf2dd; --warn-rule: #d9b45a; --bad: #b3261e;
+  --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+    --mat: #2b302f; --tape: #cfd6d2; --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff; --arm: #ff8a3d;
+    --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211d; --ink: #e5ece8; --muted: #9baba3; --rule: #2a3832; --soft: #1e2a25;
+  --mat: #2b302f; --tape: #cfd6d2; --stick: #d9b07a; --tnt: #f06595; --duck: #ffd43b; --car: #74a7ff; --arm: #ff8a3d;
+  --on-dark: #0f1613; --on-light: #1c1a05; --go: #5cc6a3; --warn-bg: #2a2413; --warn-rule: #8f7430; --bad: #ff8a80;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 52rem; margin: 0 auto; padding-block: 1.5rem 4rem; display: flex; flex-direction: column; gap: 1.6rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 700; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+p { margin: 0; max-width: 66ch; }
+section { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 1.2rem; border-bottom: 2px solid var(--ink); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--car); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--soft); padding: 0.05rem 0.3rem; border-radius: 3px; overflow-wrap: anywhere; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+.groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.group { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.7rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.group.main { background: var(--warn-bg); border-color: var(--warn-rule); }
+.group b { font-family: var(--display); font-size: 1.1rem; line-height: 1.15; }
+.group .cnt { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 40rem) { .groups { grid-template-columns: 1fr; } }
+.status { font-family: var(--mono); font-size: 0.84rem; padding: 0.5rem 0.75rem; border-radius: 4px; background: var(--soft); color: var(--muted); }
+.status.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-rule); color: var(--ink); }
+.status.bad { background: var(--warn-bg); border-left: 4px solid var(--bad); color: var(--ink); }
+.bar { height: 0.7rem; background: var(--soft); border-radius: 99px; overflow: hidden; border: 1px solid var(--rule); }
+.bar > i { display: block; height: 100%; width: 0; background: var(--go); }
+.next { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.next-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.9rem; }
+.next-head .num { font-family: var(--display); font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.where { font-family: var(--display); font-size: clamp(1.2rem, 4.6vw, 1.6rem); font-weight: 700; line-height: 1.15; }
+.scene { width: 100%; max-width: 40rem; height: auto; display: block; }
+.legend-icons { width: 100%; max-width: 40rem; height: auto; display: block; }
+.scene text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.btn-go { background: var(--go); color: var(--on-dark); border: 0; border-radius: 5px; padding: 0.75rem 1.4rem; font-family: var(--display); font-size: 1.25rem; font-weight: 700; }
+.btn-go:disabled { opacity: 0.45; cursor: default; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.88rem; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 0.4rem; align-items: center; }
+.chip { width: 1.5rem; height: 1.5rem; border-radius: 3px; display: inline-grid; place-items: center; font: 500 0.75rem var(--mono); flex: none; }
+.chip.B { background: var(--stick); color: var(--on-light); } .chip.D { background: var(--duck); color: var(--on-light); }
+.chip.C { background: var(--car); color: var(--on-dark); } .chip.T { background: var(--tnt); color: var(--on-dark); }
+.listbox { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.row { display: grid; grid-template-columns: 2.4rem 1fr auto; gap: 0.6rem; align-items: center; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); }
+.listbox > :last-child { border-bottom: 0; }
+.row .n { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.row .what { font-size: 0.92rem; min-width: 0; overflow-wrap: anywhere; }
+.row .what b { font-weight: 600; }
+.row.done .n, .row.done .what { opacity: 0.4; }
+.row.isnext { background: var(--warn-bg); }
+.row input { width: 1.5rem; height: 1.5rem; accent-color: var(--go); }
+ul.rules, ol.after { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; max-width: 68ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Team CrimsonSnow · SO-101 · fix for the gaps on the arc</span>
+    <h1>Battery Arc Recordings</h1>
+    <p>24 recordings with the battery spread along the arc of the four tapes. Two thirds go to the two gaps the model misses (between tapes 1 and 2, and between tapes 3 and 4); the rest are on the tapes and in the middle gap, so it keeps what it already knows. The other three objects stay on the tapes, shuffled.</p>
+  </header>
+
+  <section aria-labelledby="h-groups">
+    <h2 id="h-groups">The three groups</h2>
+    <div class="groups" id="groups"></div>
+  </section>
+
+  <section aria-labelledby="h-next">
+    <h2 id="h-next">Record next</h2>
+    <div id="status" class="status" role="status" aria-live="polite">Loading saved ticks…</div>
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="next">
+      <div class="next-head">
+        <span class="eyebrow">Recording</span>
+        <span class="num" id="next-num">1</span>
+        <span class="hint" id="next-sub"></span>
+      </div>
+      <div class="where" id="next-where"></div>
+      <svg class="scene" id="scene" viewBox="0 0 440 320" role="img" aria-label="Top view of the mat"></svg>
+      <div class="actions">
+        <button type="button" class="btn-go" id="next-done" disabled>Recorded</button>
+        <span class="hint">Top view from behind the arm: the arm is at the bottom, tape 1 is next to the box.</span>
+      </div>
+    </div>
+    <svg class="legend-icons" id="legend" viewBox="0 0 440 46" role="img" aria-label="Legend: battery, duck, car, TNT, empty tape"></svg>
+  </section>
+
+  <section aria-labelledby="h-each">
+    <h2 id="h-each">Every recording</h2>
+    <ul class="rules">
+      <li>Same person on the leader arm, same movement as before: from rest, down from above, close on the middle of the battery, lift, drop low over the box, back to rest.</li>
+      <li>Record in SenseCraft so the calibration and camera names match the 281 earlier episodes. Cameras, box, mat and light stay as they are.</li>
+      <li>"Turned" means turned 20° and lined up with the wrist before closing, as in the earlier sessions.</li>
+      <li>A fumbled grab: redo it before ticking.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-all">
+    <h2 id="h-all">All 24</h2>
+    <div class="listbox" id="list"></div>
+  </section>
+
+  <section aria-labelledby="h-after">
+    <h2 id="h-after">When all 24 are ticked</h2>
+    <ol class="after">
+      <li>In SenseCraft, merge them with <code>battery full dataset</code> (281 + 24 = 305 episodes) and send Claude the new name.</li>
+      <li>Claude fine-tunes the cloud model on an A100: 15,000 steps, batch 8, the same small learning rate, about 45 minutes.</li>
+      <li>Test the 5,000-step checkpoint first: the two gaps, then the 24-arrangement page. Keep it only if it still gets every old position.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function () {
+  // Tape positions on the mat (share of width from the left, share of depth from the arm's edge),
+  // measured from the training frames.
+  var TAPES = [[0.28, 0.18], [0.42, 0.36], [0.69, 0.34], [0.82, 0.15]];
+  var GROUPS = {
+    L: { label: "Gap between tapes 1 and 2", short: "gap 1–2", count: 8, main: true },
+    R: { label: "Gap between tapes 3 and 4", short: "gap 3–4", count: 8, main: true },
+    A: { label: "Anchors: tapes and the middle gap", short: "anchor", count: 8, main: false }
+  };
+  var GAP_POS = [0.5, 0.3, 0.7, 0.45, 0.35, 0.65, 0.55, 0.4];
+  var ANCHORS = [["tape", 0], ["tape", 1], ["gap", 1, 0.5], ["tape", 2], ["tape", 3], ["gap", 1, 0.35], ["tape", 1], ["gap", 1, 0.65]];
+  var ORDERS = ["DCT", "CTD", "TDC", "DTC", "CDT", "TCD"];
+  var NAME = { B: "battery", D: "duck", C: "car", T: "TNT" };
+
+  var EP = [], n = 0;
+  for (var i = 0; i < 8; i++) {
+    ["L", "R", "A"].forEach(function (g) {
+      n++;
+      var e = { n: n, group: g, turn: n % 4 === 0 ? (n % 8 === 0 ? 20 : -20) : 0 };
+      if (g === "L") { e.kind = "gap"; e.seg = 0; e.f = GAP_POS[i]; }
+      else if (g === "R") { e.kind = "gap"; e.seg = 2; e.f = GAP_POS[(i + 3) % 8]; }
+      else { var a = ANCHORS[i]; e.kind = a[0]; if (a[0] === "tape") e.tape = a[1]; else { e.seg = a[1]; e.f = a[2]; } }
+      // objects on the tapes: on a tape anchor the battery takes that tape; otherwise one tape stays empty
+      var order = ORDERS[(n - 1) % ORDERS.length], free = [], k = 0;
+      e.onTape = [null, null, null, null];
+      var skip = e.kind === "tape" ? e.tape : (n - 1) % 4;
+      for (var t = 0; t < 4; t++) if (t !== skip) { e.onTape[t] = order.charAt(k++); }
+      if (e.kind === "tape") e.onTape[e.tape] = "B";
+      EP.push(e);
+    });
+  }
+  var TOTAL = EP.length;
+
+  function point(e) {
+    if (e.kind === "tape") return TAPES[e.tape];
+    var a = TAPES[e.seg], b = TAPES[e.seg + 1];
+    return [a[0] + (b[0] - a[0]) * e.f, a[1] + (b[1] - a[1]) * e.f];
+  }
+  function whereText(e) {
+    var pos = e.kind === "tape" ? "on tape " + (e.tape + 1)
+      : "between tapes " + (e.seg + 1) + " and " + (e.seg + 2) + ", " + Math.round(e.f * 100) + " % of the way from tape " + (e.seg + 1);
+    return "Battery " + pos + (e.turn ? ", turned " + (e.turn < 0 ? "left" : "right") + " 20°" : ", straight");
+  }
+  function objectsText(e) {
+    var parts = [];
+    for (var t = 0; t < 4; t++) { var o = e.onTape[t]; if (o && o !== "B") parts.push("tape " + (t + 1) + " " + NAME[o]); }
+    var empty = e.onTape.indexOf(null);
+    return parts.join(", ") + (empty >= 0 ? ", tape " + (empty + 1) + " empty" : "");
+  }
+  function docId(k) { return "g" + ("0" + k).slice(-2); }
+
+  var done = {}, pending = {}, mode = "loading", col = null;
+  var LOCAL_KEY = "battery-arc-recordings";
+  var el = function (id) { return document.getElementById(id); };
+  function canWrite() { return mode === "shared" || mode === "local"; }
+  function setStatus(text, kind) { var s = el("status"); s.textContent = text; s.className = "status" + (kind ? " " + kind : ""); }
+  function nextEpisode() { for (var k = 1; k <= TOTAL; k++) if (!done[k]) return k; return 0; }
+
+  var NS = "http://www.w3.org/2000/svg";
+  function svg(tag, attrs, parent) { var x = document.createElementNS(NS, tag); for (var a in attrs) x.setAttribute(a, attrs[a]); parent.appendChild(x); return x; }
+  // Zoomed on the part of the mat with the tapes (they sit in the third nearest the arm).
+  function toXY(p) { return [90 + (p[0] - 0.18) / 0.74 * 330, 30 + (1 - (p[1] - 0.05) / 0.43) * 215]; }
+  function label(parent, x, y, text, style) {
+    var t = svg("text", { x: x, y: y, "text-anchor": "middle" }, parent); t.textContent = text;
+    if (style) t.setAttribute("style", style);
+    return t;
+  }
+  // Small drawings of the real things on the table.
+  function icon(kind, parent, x, y, s, rot, v) {
+    var g = svg("g", { transform: "translate(" + x + " " + y + ") rotate(" + (rot || 0) + ") scale(" + s + ")" }, parent);
+    if (kind === "D") {           // rubber duck
+      svg("path", { d: "M-15 1 L-21 -4 L-14 8 Z", fill: v("--duck") }, g);
+      svg("ellipse", { cx: -1, cy: 5, rx: 15, ry: 10, fill: v("--duck") }, g);
+      svg("circle", { cx: 7, cy: -7, r: 8, fill: v("--duck") }, g);
+      svg("path", { d: "M14 -9 L22 -6 L14 -3 Z", fill: "#f08c00" }, g);
+      svg("circle", { cx: 9, cy: -9, r: 1.6, fill: "#1c1a05" }, g);
+      svg("path", { d: "M-6 3 Q0 8 6 3", fill: "none", stroke: "#c9a000", "stroke-width": 1.5 }, g);
+    } else if (kind === "C") {    // toy car
+      svg("path", { d: "M-9 -5 L-5 -13 L7 -13 L12 -5 Z", fill: v("--car") }, g);
+      svg("rect", { x: -17, y: -6, width: 34, height: 12, rx: 4, fill: v("--car") }, g);
+      svg("rect", { x: -4, y: -11, width: 6, height: 5, rx: 1, fill: "#d5e6ff" }, g);
+      svg("rect", { x: 4, y: -11, width: 5, height: 5, rx: 1, fill: "#d5e6ff" }, g);
+      svg("circle", { cx: -9, cy: 7, r: 4.5, fill: "#1f2328" }, g);
+      svg("circle", { cx: 9, cy: 7, r: 4.5, fill: "#1f2328" }, g);
+    } else if (kind === "T") {    // pink TNT block
+      svg("rect", { x: -13, y: -13, width: 26, height: 26, rx: 3, fill: v("--tnt") }, g);
+      svg("rect", { x: -13, y: -4, width: 26, height: 8, fill: "#ffffff", opacity: 0.9 }, g);
+      label(g, 0, 3, "TNT", "fill:#b0204f;font:700 7.5px sans-serif");
+    } else if (kind === "B") {    // the wooden battery, + and - drawn on it
+      svg("rect", { x: -7, y: -20, width: 14, height: 40, rx: 2.5, fill: v("--stick"), stroke: "#7a5a30", "stroke-width": 1.2 }, g);
+      svg("line", { x1: 0, y1: -14, x2: 0, y2: -8, stroke: "#3a2a12", "stroke-width": 1.6 }, g);
+      svg("line", { x1: -3, y1: 10, x2: 3, y2: 10, stroke: "#3a2a12", "stroke-width": 1.6 }, g);
+      svg("line", { x1: 0, y1: 7, x2: 0, y2: 13, stroke: "#3a2a12", "stroke-width": 1.6 }, g);
+    } else if (kind === "E") {    // empty tape
+      svg("rect", { x: -7, y: -7, width: 14, height: 14, fill: v("--tape") }, g);
+      svg("circle", { cx: 0, cy: 0, r: 15, fill: "none", stroke: v("--tape"), "stroke-width": 1.5, "stroke-dasharray": "3 3" }, g);
+    }
+    return g;
+  }
+  function drawScene(e) {
+    var s = el("scene"); s.textContent = "";
+    var cs = getComputedStyle(document.documentElement), v = function (n) { return cs.getPropertyValue(n).trim(); };
+    var small = "fill:" + v("--muted") + ";font:500 11px 'IBM Plex Mono', monospace";
+    // the cardboard box on the left, the mat, the arm at the bottom
+    svg("rect", { x: 6, y: 96, width: 62, height: 120, rx: 3, fill: "#b98a55" }, s);
+    svg("rect", { x: 13, y: 104, width: 48, height: 104, rx: 2, fill: "#d6ae7b" }, s);
+    label(s, 37, 230, "box", small);
+    svg("rect", { x: 80, y: 14, width: 350, height: 262, rx: 6, fill: v("--mat") }, s);
+    svg("path", { d: "M228 320 L238 262 Q255 246 272 262 L282 320 Z", fill: v("--arm") }, s);
+    svg("rect", { x: 243, y: 250, width: 24, height: 16, rx: 3, fill: v("--arm") }, s);
+    label(s, 255, 300, "arm", "fill:#ffffff;font:600 11px 'IBM Plex Mono', monospace");
+    // the four tapes and what stands on them
+    for (var t = 0; t < 4; t++) {
+      var c = toXY(TAPES[t]);
+      svg("rect", { x: c[0] - 6, y: c[1] - 6, width: 12, height: 12, fill: v("--tape") }, s);
+      var o = e.onTape[t];
+      if (o && o !== "B") icon(o, s, c[0], c[1], 1.15, 0, v);
+      if (!o) icon("E", s, c[0], c[1], 1, 0, v);
+      // labels sit away from the gaps: tapes 1 and 4 below, tape 2 to its left, tape 3 to its right
+      var lt = label(s, c[0] + (t === 1 ? -24 : t === 2 ? 24 : 0), c[1] + (t === 1 || t === 2 ? 4 : 33),
+                     "tape " + (t + 1) + (o === "B" ? "" : o ? " · " + NAME[o] : " · empty"),
+                     "fill:#e8ece9;font:500 11px 'IBM Plex Mono', monospace");
+      if (t === 1) lt.setAttribute("text-anchor", "end");
+      if (t === 2) lt.setAttribute("text-anchor", "start");
+    }
+    // where the battery goes: a dotted guide between the two tapes and its share of the way
+    if (e.kind === "gap") {
+      var a = toXY(TAPES[e.seg]), b = toXY(TAPES[e.seg + 1]);
+      svg("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: v("--warn-rule"), "stroke-width": 2, "stroke-dasharray": "4 5" }, s);
+    }
+    var p = toXY(point(e));
+    svg("circle", { cx: p[0], cy: p[1], r: 30, fill: "none", stroke: v("--bad"), "stroke-width": 3 }, s);
+    icon("B", s, p[0], p[1], 1, e.turn, v);
+    var tag = e.kind === "gap" ? Math.round(e.f * 100) + "% from tape " + (e.seg + 1) : "on tape " + (e.tape + 1);
+    label(s, 255, 36, "battery (red circle): " + tag + (e.turn ? ", turned " + (e.turn < 0 ? "left" : "right") + " 20°" : ", straight"),
+          "fill:#ffffff;font:700 13px 'IBM Plex Sans', sans-serif");
+    label(s, 255, 54, "close-up of the area with the tapes", "fill:#b8c2bd;font:500 10px 'IBM Plex Mono', monospace");
+    s.setAttribute("aria-label", "Recording " + e.n + ": " + whereText(e) + ". " + objectsText(e));
+  }
+  function drawLegend() {
+    var s = el("legend"); s.textContent = "";
+    var cs = getComputedStyle(document.documentElement), v = function (n) { return cs.getPropertyValue(n).trim(); };
+    var txt = "fill:" + v("--ink") + ";font:500 12px 'IBM Plex Sans', sans-serif";
+    [["B", "battery"], ["D", "duck"], ["C", "car"], ["T", "TNT"], ["E", "empty tape"]].forEach(function (it, i) {
+      var x = 22 + i * 86;
+      icon(it[0], s, x, 23, it[0] === "B" ? 0.8 : 0.9, it[0] === "B" ? 90 : 0, v);
+      var t = svg("text", { x: x + 22, y: 27 }, s); t.textContent = it[1]; t.setAttribute("style", txt);
+    });
+  }
+  drawLegend();
+
+  function renderGroups() {
+    var box = el("groups"); box.textContent = "";
+    ["L", "R", "A"].forEach(function (g) {
+      var got = EP.filter(function (e) { return e.group === g && done[e.n]; }).length, G = GROUPS[g];
+      var d = document.createElement("div"); d.className = "group" + (G.main ? " main" : "");
+      var b = document.createElement("b"); b.textContent = G.label;
+      var c = document.createElement("span"); c.className = "cnt"; c.textContent = got + " of " + G.count + " recorded";
+      d.appendChild(b); d.appendChild(c); box.appendChild(d);
+    });
+    var total = Object.keys(done).length;
+    el("bar").style.width = (100 * total / TOTAL) + "%";
+  }
+  function renderNext() {
+    var k = nextEpisode();
+    if (!k) {
+      el("next-num").textContent = "Done"; el("next-sub").textContent = "All 24 are recorded."; el("next-where").textContent = "Merge them in SenseCraft, then send Claude the name.";
+      el("scene").textContent = ""; el("next-done").disabled = true; return;
+    }
+    var e = EP[k - 1];
+    el("next-num").textContent = k;
+    el("next-sub").textContent = GROUPS[e.group].label + " · other objects: " + objectsText(e);
+    el("next-where").textContent = whereText(e);
+    drawScene(e);
+    el("next-done").disabled = !canWrite() || !!pending[k];
+    el("next-done").textContent = "Recorded " + k;
+  }
+  function renderList() {
+    var list = el("list"), next = nextEpisode(); list.textContent = "";
+    EP.forEach(function (e) {
+      var row = document.createElement("label");
+      row.className = "row" + (done[e.n] ? " done" : "") + (e.n === next ? " isnext" : "");
+      row.setAttribute("for", "rec-" + e.n);
+      var num = document.createElement("span"); num.className = "n"; num.textContent = e.n;
+      var what = document.createElement("span"); what.className = "what";
+      var b = document.createElement("b"); b.textContent = whereText(e);
+      what.appendChild(b); what.appendChild(document.createTextNode(" · " + objectsText(e)));
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "rec-" + e.n; cb.checked = !!done[e.n];
+      cb.disabled = !canWrite() || !!pending[e.n]; cb.setAttribute("aria-label", "Recording " + e.n + " done");
+      cb.addEventListener("change", function () { toggle(e.n, this.checked); });
+      row.appendChild(num); row.appendChild(what); row.appendChild(cb); list.appendChild(row);
+    });
+  }
+  function renderAll() { renderGroups(); renderNext(); renderList(); }
+
+  function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(Object.keys(done))); } catch (e) {} }
+  function loadLocal() { try { (JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]") || []).forEach(function (k) { done[parseInt(k, 10)] = true; }); } catch (e) {} }
+  function toggle(k, value) {
+    if (!canWrite() || pending[k]) { renderAll(); return; }
+    if (value) done[k] = true; else delete done[k];
+    if (mode === "local") { saveLocal(); renderAll(); return; }
+    pending[k] = true; renderAll(); setStatus("Saving recording " + k + "…");
+    var ref = col.doc(docId(k));
+    var write = value ? ref.set({ done: true, recording: k, at: new Date().toISOString() }) : ref["delete"]();
+    write.then(function () { delete pending[k]; setStatus("Saved. Everyone who opens this page sees the same ticks."); renderAll(); },
+      function (err) {
+        delete pending[k]; if (value) delete done[k]; else done[k] = true;
+        var code = err && err.code;
+        if (code === "invalid_argument" || code === "not_granted" || code === "revoked") {
+          mode = "readonly"; setStatus("You can see this page but not tick. Ask the owner to share it with you as a contributor.", "bad");
+        } else setStatus("Recording " + k + " was not saved (connection problem). Tick it again.", "bad");
+        renderAll();
+      });
+  }
+  el("next-done").addEventListener("click", function () { var k = nextEpisode(); if (k) toggle(k, true); });
+  renderAll();
+  function startLocal() { mode = "local"; loadLocal(); setStatus("Shared saving is not available in this view. Ticks are kept in this browser only.", "warn"); renderAll(); }
+  var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("db") : Promise.resolve(null);
+  use.then(function (db) {
+    if (!db) { startLocal(); return; }
+    col = db.collection("arc24");
+    var slow = setTimeout(function () { if (mode === "loading") setStatus("The saved ticks cannot be reached yet. Still trying…", "warn"); }, 10000);
+    col.onSnapshot(function (snap) {
+      var fresh = {};
+      snap.docs.forEach(function (d) {
+        var k = parseInt(String(d.id).slice(1), 10), body = d.exists ? d.data() : null;
+        if (k >= 1 && k <= TOTAL && body && body.done === true) fresh[k] = true;
+      });
+      for (var p in pending) { if (done[p]) fresh[p] = true; else delete fresh[p]; }
+      done = fresh;
+      if (mode === "loading") { clearTimeout(slow); mode = "shared"; setStatus("Ticks are saved in this page for everyone who opens it."); }
+      renderAll();
+    }, function () {
+      clearTimeout(slow);
+      if (mode === "loading") { startLocal(); return; }
+      mode = "readonly"; setStatus("Lost the connection to the saved ticks. Reload the page to continue.", "bad"); renderAll();
+    });
+  }, function () { startLocal(); });
+})();
+</script>

@@ -851,3 +851,416 @@ python \
 ```
 
 exit code 0 after 1m05s
+
+## 2026-11-22 03:15:39  demo act_battery_finetune_15k@015000
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=act_battery_finetune_15k@015000 \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  '--policy.path=~\Desktop\H\outputs\train\act_battery_finetune_15k\checkpoints\015000\pretrained_model' \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 4m36s
+
+## 2026-11-22 03:21:00  demo outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+## 2026-11-22 03:21:37  demo outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 5m45s
+
+## 2026-11-22 03:27:43  demo outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m50s
+
+## 2026-11-22 03:29:41  demo outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m43s
+
+## 2026-11-22 03:31:36  demo outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_15k/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 1m48s
+
+## 2026-11-22 03:35:09  demo outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 8m07s
+
+## 2026-11-22 03:43:48  demo outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 3m16s
+
+## 2026-11-22 03:47:30  demo outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 7m29s
+
+## 2026-11-22 03:55:06  demo outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_full_100k_cloud/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 6m59s
+
+## 2026-11-22 05:02:45  demo outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 3m01s
+
+## 2026-11-22 05:05:51  demo outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 4m17s
+
+## 2026-11-22 05:10:21  demo outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --record-video \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 1 after 2m58s
+
+## 2026-11-22 05:17:33  demo outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model
+
+```bash
+python \
+  -m \
+  sokit.demo \
+  --tries=3 \
+  --attempts=5 \
+  --check=auto \
+  --label=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --scene-camera=top \
+  --wrist-camera=wrist \
+  -- \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_battery_finetune_locations/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower \
+  --robot.port=COM5 \
+  --robot.id=so100_follower \
+  '--robot.cameras={ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30, fourcc: MJPG}, wrist: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30, fourcc: MJPG} }' \
+  '--robot.calibration_dir=~/AppData/Roaming/SenseCraft Robotics/backend-storage/calibration/lerobot/robots/so_follower' \
+  '--task=Put the TNT in the bin' \
+  --duration=40 \
+  --interactive=true \
+  --play_sounds=false \
+  '--rename_map={observation.images.top: observation.images.front, observation.images.wrist: observation.images.gripper}'
+```
+
+exit code 0 after 6m01s
