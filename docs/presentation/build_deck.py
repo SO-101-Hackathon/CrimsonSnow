@@ -427,15 +427,15 @@ def build(panel_available: bool) -> Presentation:
     title(s, "Find the battery, drop it in the box")
     findings = [(["Spain: a waste plant catches fire", "every 3.5 days"],
                  "109 fires in 2023; lithium batteries are a growing cause"),
-                ("Batteries arrive in household rubbish", "phones, vapes, toys"),
+                (["EU law: collect 73% of portable", "batteries by 2030"], "every one has to be sorted out of the rest"),
                 ("Picking them out by hand is dangerous", "a damaged battery can catch fire without warning")]
     for i, (head, sub_text) in enumerate(findings):
         y = 1.65 + i * 1.32
         badge(s, M, y, 0.48, str(i + 1), size=18)
         text(s, M + 0.7, y - 0.04, 5.3, 0.8, head, size=20, bold=True)
-        text(s, M + 0.7, y + 0.72 if i == 0 else y + 0.42, 5.3, 0.45, sub_text, size=15, color=MUTED)
-    text(s, M, 5.75, 5.9, 0.6, "Sources: TECNIFUEGO via IFEMA SICUR (fires); FER, Federación Española de la "
-                               "Recuperación y el Reciclaje (household rubbish)", size=12, color=MUTED, name="Sources")
+        text(s, M + 0.7, y + 0.72 if isinstance(head, list) else y + 0.42, 5.3, 0.45, sub_text, size=15, color=MUTED)
+    text(s, M, 5.75, 5.9, 0.6, "Sources: TECNIFUEGO via IFEMA SICUR (fires); Regulation (EU) 2023/1542 "
+                               "on batteries and waste batteries (collection target)", size=12, color=MUTED, name="Sources")
     pw = 13.333 - M - 6.95
     pic = photo(s, "scene_start.jpg", 6.95, 1.6, w=pw,
                 alt="Our task: the battery (wooden block) on the mat among a duck, a toy car and a TNT cube")
@@ -447,14 +447,14 @@ def build(panel_available: bool) -> Presentation:
          color=MUTED)
     notes(s, "[0:30 | total 0:45]\n"
              "Why batteries? In Spain a waste plant catches fire every three and a half days: 109 fires in 2023, and "
-             "lithium batteries are a growing cause. They arrive in household rubbish: phones, vapes, toys. Picking "
-             "them out by hand is dangerous; a damaged battery can catch fire without warning. So our task: among "
+             "lithium batteries are a growing cause. And EU law says 73 percent of portable batteries must be collected "
+             "by 2030, so every one of them has to be sorted out of the rest. Picking them out by hand is dangerous; a damaged battery can catch fire without warning. So our task: among "
              "other objects, the arm picks the battery and drops it into its own box, learned only from our "
              "demonstrations.\n"
              "[If asked: the UK counted 2,839 battery fires in its waste system in 2025, one every 3 hours (Recycle "
-             "Your Electricals research, reported by Insurance Times). The EU must collect 73% of portable batteries "
-             "by 2030 (Regulation (EU) 2023/1542). Spain's 109 fires: TECNIFUEGO via IFEMA SICUR, all waste-plant "
-             "fires, so 'a growing cause', not 'the cause'. Household rubbish: FER. Later recordings also had a "
+             "Your Electricals research, reported by Insurance Times). They arrive in household rubbish: phones, vapes, "
+             "toys (FER). Spain's 109 fires: TECNIFUEGO via IFEMA SICUR, all waste-plant "
+             "fires, so 'a growing cause', not 'the cause'. 73% by 2030: Regulation (EU) 2023/1542. Later recordings also had a "
              "yellow cube, a tape roll and a pen on the mat.]")
 
     # 3 -- clutter test -------------------------------------------------------------------------
