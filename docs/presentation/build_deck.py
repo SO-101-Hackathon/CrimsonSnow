@@ -516,43 +516,62 @@ def build(panel_available: bool) -> Presentation:
              "about 80 percent normal placements so it does not forget what it knew. In total "
              f"{N['episodes']} demonstrations, about {N['minutes']} minutes of us driving the arm.")
 
-    # 5 -- closed loop ----------------------------------------------------------------------------
+    # 5 -- the pipeline: find, grab, drop, check, retry ----------------------------------------------
     s = prs.slides.add_slide(content)
-    title(s, "If it fails, it tries again — hands off")
-    steps = [("1", "Run the policy", "ACT, up to 40 s"), ("2", "Back to the start", "the same pose every run"),
-             ("3", "Check", "is the battery in the box?")]
-    bw, gap, top, bh = 2.85, 0.42, 1.7, 1.4
+    title(s, "How it works: find, grab, drop, check")
+    steps = [("1", "Find", "the two cameras show where the battery is"),
+             ("2", "Grab", "the arm reaches it and closes the gripper"),
+             ("3", "Drop", "carries it over the box and lets go"),
+             ("4", "Check", "back at the start: gripper + our vision model")]
+    gap, top, bh = 0.4, 2.05, 1.65
+    bw = (13.333 - 2 * M - 4 * gap) / 5
+    xs = [M + i * (bw + gap) for i in range(5)]
+    # steps 1-3 are one run of the ACT policy (it finds the battery from the camera images itself)
+    act_w = xs[2] + bw - xs[0]
+    text(s, xs[0], 1.5, act_w, 0.35, [[("ACT policy", {"bold": True, "color": SNOW}),
+                                        ("  ·  one run, up to 40 s, from both cameras", {})]],
+         size=15, color=MUTED, align=PP_ALIGN.CENTER, name="ACT label")
+    polyline(s, [(xs[0], 1.97), (xs[0], 1.88), (xs[0] + act_w, 1.88), (xs[0] + act_w, 1.97)], MUTED, width=1.5,
+             head=False, name="ACT bracket")
     for i, (num, head, sub_text) in enumerate(steps):
-        x = M + i * (bw + gap)
+        x = xs[i]
         card(s, x, top, bw, bh, name=f"Step {num}")
-        badge(s, x + 0.22, top + 0.24, 0.44, num, size=16)
-        text(s, x + 0.78, top + 0.24, bw - 0.95, 0.44, head, size=20, bold=True, anchor=MSO_ANCHOR.MIDDLE)
-        text(s, x + 0.25, top + 0.8, bw - 0.45, 0.55, sub_text, size=15, color=MUTED)
+        badge(s, x + 0.2, top + 0.22, 0.44, num, size=16)
+        text(s, x + 0.76, top + 0.22, bw - 0.9, 0.44, head, size=20, bold=True, anchor=MSO_ANCHOR.MIDDLE)
+        text(s, x + 0.2, top + 0.8, bw - 0.35, 0.8, sub_text, size=14, color=MUTED)
         arrow(s, x + bw + 0.03, top + bh / 2, x + bw + gap - 0.03, top + bh / 2,
-              color=GREEN if i == 2 else CRIMSON, width=3)
-    sx = M + 3 * (bw + gap)
-    card(s, sx, top, 13.333 - M - sx, bh, fill=CARD, line=(GREEN, 2.25), name="Success")
-    text(s, sx + 0.25, top + 0.24, 13.333 - M - sx - 0.4, 0.44, "Success", size=22, bold=True, color=GREEN,
+              color=GREEN if i == 3 else CRIMSON, width=3)
+    card(s, xs[4], top, bw, bh, fill=CARD, line=(GREEN, 2.25), name="Success")
+    text(s, xs[4] + 0.2, top + 0.22, bw - 0.35, 0.44, "Success", size=20, bold=True, color=GREEN,
          anchor=MSO_ANCHOR.MIDDLE)
-    text(s, sx + 0.25, top + 0.8, 13.333 - M - sx - 0.4, 0.55, "battery in the box", size=15, color=SNOW)
-    x1, x3 = M + bw / 2, M + 2 * (bw + gap) + bw / 2
-    polyline(s, [(x3, top + bh + 0.03), (x3, top + bh + 0.62), (x1, top + bh + 0.62), (x1, top + bh + 0.05)],
+    text(s, xs[4] + 0.2, top + 0.8, bw - 0.35, 0.8, "battery in the box: next attempt", size=14, color=SNOW)
+    x1, x4 = xs[0] + bw / 2, xs[3] + bw / 2
+    loop_y = top + bh + 0.5
+    polyline(s, [(x4, top + bh + 0.03), (x4, loop_y), (x1, loop_y), (x1, top + bh + 0.05)],
              AMBER, width=3, name="Retry loop")
-    text(s, x1, top + bh + 0.72, x3 - x1, 0.4, "still on the mat → run again, up to 3 runs", size=17,
+    text(s, x1, loop_y + 0.1, x4 - x1, 0.4, "not in the box → find it and grab it again, up to 3 runs", size=17,
          color=AMBER, bold=True, align=PP_ALIGN.CENTER, name="Retry label")
-    pic = photo(s, "grip_only_wrong.jpg", M, 4.55, w=2.85,
+    py, pw = 4.75, 2.55
+    pic = photo(s, "grip_only_wrong.jpg", M, py, w=pw,
                 alt="Check photo: the battery is still in the gripper although the gripper-only check said success")
     ring(s, pic, "grip_only_wrong.jpg", width=2.5)
-    text(s, M + 3.27, 4.55, 13.333 - M - (M + 3.27), pic.height / 914400,
-         [[("First test: ", {"color": CRIMSON, "bold": True}), ("the gripper alone said “success”.", {"bold": True})],
-          [("The camera shows the battery still in the gripper. That is why we check with vision.",
-            {"size": 18, "color": MUTED})]], size=22, after=8, anchor=MSO_ANCHOR.MIDDLE)
+    tx = M + pw + 0.4
+    text(s, tx, py, 13.333 - M - tx, pic.height / 914400,
+         [[("Why step 4 needs a camera: ", {"color": CRIMSON, "bold": True}),
+           ("in our first test the gripper alone said “success”.", {"bold": True})],
+          [("This photo was taken at that moment: the battery is still in the gripper. "
+            "The gripper cannot see the box; the overhead camera can.", {"size": 17, "color": MUTED})]],
+         size=20, after=8, anchor=MSO_ANCHOR.MIDDLE)
     notes(s, "[0:45 | total 2:35]\n"
-             "The demo is five attempts with nobody touching the robot. So we closed the loop. The policy runs; the "
-             "arm goes back exactly to its start pose; then we check the result. Battery in the box: success. Still "
-             "on the mat: the robot simply tries again, up to three runs per attempt. Why a camera? In our first "
-             "test the gripper-only check said success. This photo was taken at that moment: the battery is still "
-             "in the gripper. The gripper alone cannot see the box.")
+             "Here is the whole system. One run of the ACT policy does three things: from the two cameras it finds "
+             "the battery, grabs it, and drops it into the box. Then the arm goes back exactly to its start pose and "
+             "we check: did it work? We look at the gripper and at the overhead camera with our own vision model. "
+             "Battery in the box: success, next attempt. Not in the box: it finds the battery again and grabs it "
+             "again, up to three runs, with nobody touching the robot. Why a camera? In our first test the "
+             "gripper-only check said success; this photo was taken at that moment, and the battery is still in "
+             "the gripper. The gripper cannot see the box.\n"
+             "[If asked: there is no separate detector; ACT finds the battery itself from the camera images. "
+             "The retries are run by so demo (sokit/demo.py).]")
 
     # 6 -- our own vision check ---------------------------------------------------------------------
     s = prs.slides.add_slide(content)

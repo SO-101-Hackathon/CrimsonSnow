@@ -9,7 +9,7 @@ script and the time for each slide are in the speaker notes (PowerPoint: View > 
 | 2 | Find the battery, drop it in the box | why: battery fires in Spain's waste plants (utility) | 0:30 |
 | 3 | Only the battery, even in a pile of junk | clutter test video: 14 other objects, picked first try | 0:20 |
 | 4 | 257 demonstrations, aimed at our failures | data, iteration on failures | 0:45 |
-| 5 | If it fails, it tries again | closed loop with automatic retries | 0:45 |
+| 5 | How it works: find, grab, drop, check | the pipeline, with automatic retries when the check fails | 0:45 |
 | 6 | Our own vision model checks the box | innovation: labels for free from the gripper | 0:45 |
 | 7 | Built to be repeated | `so` helper, CI, control panel, open repo | 0:25 |
 | 8 | Live now: five attempts, hands off | 3/7 by hand → 24/24, 34 logged runs, live demo | 0:25 |
